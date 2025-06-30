@@ -1,6 +1,59 @@
-.vercel
-__pycache__/
-phishing-env/
-safesurf-env/
-to-do.md
-top-1m.csv
+# -----------------
+# Go
+# -----------------
+# Binaries and executables
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go workspace stuff
+bin/
+pkg/
+*.prof
+*.log
+*.coverprofile
+
+# Dependency management
+vendor/
+
+# IDE/Editor related
+.idea/
+.vscode/
+*.swp
+
+# -----------------
+# Node/Svelte
+# -----------------
+# Node modules
+node_modules/
+
+# Build outputs
+public/build/
+dist/
+build/
+.svelte-kit/
+.svelte/
+*.tsbuildinfo
+
+# SvelteKit specific
+.env
+.env.*.local
+
+# Optional: lock file (if you use yarn or npm)
+# yarn.lock
+# package-lock.json
+
+# -----------------
+# OS/System Files
+# -----------------
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+
+
+to--do.md

@@ -1,0 +1,23 @@
+# Use full Go image for dev
+FROM golang:1.24-alpine
+
+WORKDIR /app
+
+# Install bash and Air
+RUN apk add --no-cache bash git
+
+# Copy go.mod first for caching
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy everything
+COPY . .
+ENV PATH="/go/bin:${PATH}"
+RUN go install github.com/air-verse/air@latest
+
+ENV PORT=8080
+
+EXPOSE 8080
+
+# Run Air (will watch source code)
+CMD ["air"]
