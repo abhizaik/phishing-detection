@@ -1,0 +1,36 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [go]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Debug Secrets
+      run: |
+        echo "DO_USER is: [${{ secrets.DO_USER }}]"
+        echo "DO_HOST is: [${{ secrets.DO_HOST }}]"
+
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.DO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        ssh-keyscan -H ${{ secrets.DO_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Deploy via SSH
+      run: |
+        ssh ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} << 'EOF'
+          cd recon
+          git pull origin go
+          docker compose -f docker-compose.prod.yml build
+          docker compose -f docker-compose.prod.yml down
+          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+        EOF
