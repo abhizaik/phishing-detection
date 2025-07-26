@@ -1,14 +1,11 @@
-# Root directory
-root = "."
+root = "server/go"
 tmp_dir = "tmp"
 
 [build]
-# Disable VCS info (fixes error: "error obtaining VCS status")
-cmd = "go build -o tmp/main -buildvcs=false ./cmd/recon"
-bin = "tmp/main"
-full_bin = "tmp/main"
+cmd = "cd server/go && go build -o tmp/main -buildvcs=false ./cmd/main"
+bin = "server/go/tmp/main"
+full_bin = "server/go/tmp/main"
 
-# Optional tuning
 include_ext = ["go", "tpl", "tmpl", "html"]
 exclude_dir = ["tmp", "vendor"]
 

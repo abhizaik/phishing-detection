@@ -13,6 +13,7 @@
 # Go workspace stuff
 bin/
 pkg/
+server/go/tmp/*
 *.prof
 *.log
 *.coverprofile
