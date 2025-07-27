@@ -1,0 +1,1 @@
+how to deploy (docker, k8, ci/cd)

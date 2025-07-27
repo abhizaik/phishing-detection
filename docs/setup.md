@@ -1,0 +1,1 @@
+how to set up the app in local and prod env

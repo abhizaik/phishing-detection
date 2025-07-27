@@ -2,7 +2,7 @@ root = "server/go"
 tmp_dir = "tmp"
 
 [build]
-cmd = "cd server/go && go build -o tmp/main -buildvcs=false ./cmd/main"
+cmd = "cd server/go && go build -o tmp/main -buildvcs=false ./cmd/safesurf"
 bin = "server/go/tmp/main"
 full_bin = "server/go/tmp/main"
 

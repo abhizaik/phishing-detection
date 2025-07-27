@@ -1,0 +1,1 @@
+how to run tests, structure, coverage, load testing etc.

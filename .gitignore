@@ -12,7 +12,6 @@
 
 # Go workspace stuff
 bin/
-pkg/
 server/go/tmp/*
 *.prof
 *.log
@@ -57,4 +56,4 @@ Thumbs.db
 *.bak
 
 
-to--do.md
+TODO.md
