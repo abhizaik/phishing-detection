@@ -2,9 +2,9 @@ root = "server/go"
 tmp_dir = "tmp"
 
 [build]
-cmd = "cd server/go && go build -o tmp/main -buildvcs=false ./cmd/safesurf"
-bin = "server/go/tmp/main"
-full_bin = "server/go/tmp/main"
+cmd = "cd server/go && go build -o tmp/safesurf -buildvcs=false ./cmd/safesurf"
+bin = "server/go/tmp/safesurf"
+full_bin = "server/go/tmp/safesurf"
 
 include_ext = ["go", "tpl", "tmpl", "html"]
 exclude_dir = ["tmp", "vendor"]

@@ -36,7 +36,7 @@ We welcome bug reports, feature requests, code, documentation, and testing help.
 ```bash
 cd server/go
 go mod tidy
-go run cmd/safesurf/main.go
+go run cmd/safesurf/safesurf.go
 ```
 
 ### Frontend
