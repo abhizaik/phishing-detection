@@ -1,19 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
 
-	"github.com/abhizaik/SafeSurf/internal/service/checks"
+	"github.com/abhizaik/SafeSurf/internal/handler"
+	"github.com/abhizaik/SafeSurf/internal/service/rank"
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "SafeSurf")
-		fmt.Fprintln(w, checks.GetStatusCode("https://google.com"))
+	r := handler.SetupRouter()
 
-	})
-	log.Println("Server running on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	err := rank.LoadDomainRanks()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Starting server on :8080")
+	if err := r.Run(":8080"); err != nil {
+		log.Fatal(err)
+	}
 }

@@ -2,12 +2,18 @@ package checks
 
 import "net/http"
 
-func GetStatusCode(url string) (int, error) {
+func GetStatusCode(url string) (int, string, bool, bool, error) {
 	resp, err := http.Head(url)
 	if err != nil {
-		return 0, err
+		return 0, "", false, false, err
 	}
 
 	defer resp.Body.Close()
-	return resp.StatusCode, nil
+
+	statusCode := resp.StatusCode
+	statusText := http.StatusText(statusCode)
+	isSuccess := statusCode >= 200 && statusCode < 300
+	isRedirect := statusCode >= 300 && statusCode < 400
+
+	return statusCode, statusText, isSuccess, isRedirect, nil
 }
