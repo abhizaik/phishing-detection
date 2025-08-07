@@ -104,6 +104,9 @@ var TrustedTLDs = map[string]struct{}{
 	"edu.uy": {}, //  Uruguay
 	"edu.vn": {}, //  Vietnam
 
+	"ernet.in": {}, //  India
+	"res.in":   {}, //  India
+
 	// Goverment Entities
 	"gov":           {}, //  America
 	"gov.af":        {}, //  Afghanistan
