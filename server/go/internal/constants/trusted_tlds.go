@@ -2,14 +2,15 @@ package constants
 
 // Highly trustable TLDs which are only given to trusted entities after proper verification
 var TrustedTLDs = map[string]struct{}{
-	"int":         {},
+	"aero":        {},
 	"bank":        {},
+	"coop":        {},
+	"creditunion": {},
 	"insurance":   {},
+	"int":         {},
 	"pharmacy":    {},
 	"post":        {},
 	"museum":      {},
-	"aero":        {},
-	"creditunion": {},
 	"resbank":     {},
 
 	// Academic and Educational Entities
