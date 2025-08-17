@@ -2,7 +2,6 @@ package checks
 
 import (
 	"net"
-	"net/url"
 )
 
 func GetIPAddress(domain string) ([]string, error) {
@@ -16,15 +15,4 @@ func GetIPAddress(domain string) ([]string, error) {
 		result = append(result, ip.String())
 	}
 	return result, nil
-}
-
-func UsesIPInsteadOfDomain(rawURL string) (bool, error) {
-	parsedURL, err := url.Parse(rawURL)
-	if err != nil {
-		return false, err
-	}
-
-	host := parsedURL.Hostname()
-	ip := net.ParseIP(host)
-	return ip != nil, nil
 }
