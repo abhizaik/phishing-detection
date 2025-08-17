@@ -5,14 +5,16 @@ import "time"
 // RegistrationData holds normalized domain registry info
 // regardless of whether it came from WHOIS or RDAP.
 type RegistrationData struct {
-	Domain      string
-	Registrar   string
-	CreatedDate time.Time
-	UpdatedDate time.Time
-	ExpiryDate  time.Time
-	Nameservers []string
-	Status      []string
-	DNSSEC      bool
-	Raw         string // Raw WHOIS or RDAP JSON for debugging
-	Source      string // "whois" or "rdap"
+	Domain      string    `json:"domain"`
+	Registrar   string    `json:"registrar"`
+	CreatedDate time.Time `json:"created"`
+	UpdatedDate time.Time `json:"updated"`
+	ExpiryDate  time.Time `json:"expiry"`
+	Nameservers []string  `json:"nameservers"`
+	Status      []string  `json:"status"`
+	DNSSEC      bool      `json:"dnssec"`
+	AgeHuman    string    `json:"age_human"` // e.g. "2 years 3 months"
+	AgeDays     int       `json:"age_days"`  // total days since registration
+	Raw         string    `json:"raw"`       // Raw WHOIS or RDAP JSON for debugging
+	Source      string    `json:"source"`    // "whois" or "rdap"
 }

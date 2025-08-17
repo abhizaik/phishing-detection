@@ -13,6 +13,79 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Response struct {
+	URL            string                       `json:"url"`
+	Domain         string                       `json:"domain"`
+	Features       Features                     `json:"features"`
+	Infrastructure Infrastructure               `json:"infrastructure"`
+	DomainInfo     *domaininfo.RegistrationData `json:"domain_info"`
+	Analysis       Analysis                     `json:"analysis"`
+	Performance    Performance                  `json:"performance"`
+	Incomplete     bool                         `json:"incomplete"`
+	Errors         []string                     `json:"errors"`
+}
+
+// all phishing-related derived features
+type Features struct {
+	Rank int       `json:"rank"`
+	TLD  TLDInfo   `json:"tld"`
+	URL  URLChecks `json:"url"`
+}
+
+// keywords reflated stuff
+type Keywords struct {
+	HasKeywords bool                `json:"has_keywords"`
+	Found       []string            `json:"found"`
+	Categories  map[string][]string `json:"categories"`
+}
+
+// infra-level stuff
+type Infrastructure struct {
+	IPAddresses      []string `json:"ip_addresses"`
+	NameserversValid bool     `json:"nameservers_valid"`
+	MXRecordsValid   bool     `json:"mx_records_valid"`
+}
+
+// extra artifacts
+type Analysis struct {
+	IsRedirected           bool       `json:"is_redirected"`
+	RedirectionChain       []string   `json:"redirection_chain"`
+	RedirectionChainLength int        `json:"redirection_chain_length"`
+	RedirectionFinalURL    string     `json:"redirection_final_url"`
+	HTTPStatus             HTTPStatus `json:"http_status"`
+	SupportsHSTS           bool       `json:"is_hsts_supported"`
+}
+
+type TLDInfo struct {
+	IsTrusted bool `json:"is_trusted_tld"`
+	IsRisky   bool `json:"is_risky_tld"`
+	IsICANN   bool `json:"is_icann"`
+}
+
+type URLChecks struct {
+	IsURLShortener   bool     `json:"url_shortener"`
+	UsesIP           bool     `json:"uses_ip"`
+	ContainsPunycode bool     `json:"contains_punycode"`
+	TooLong          bool     `json:"too_long"`
+	TooDeep          bool     `json:"too_deep"`
+	SubdomainCount   int      `json:"subdomain_count"`
+	Keywords         Keywords `json:"keywords"`
+}
+
+// http status code related stuffs
+type HTTPStatus struct {
+	Code                 int    `json:"code"`
+	Text                 string `json:"text"`
+	Success              bool   `json:"success"`
+	IsRedirectStatusCode bool   `json:"is_redirect"`
+}
+
+// performance timings
+type Performance struct {
+	TotalTime string            `json:"total_time"`
+	Timings   map[string]string `json:"timings"`
+}
+
 func AnalyzeURLHandler(c *gin.Context) {
 	url := c.Query("url")
 	if url == "" {
@@ -46,33 +119,41 @@ func AnalyzeURLHandler(c *gin.Context) {
 	timings := make(map[string]string)
 
 	var (
-		rankValue         int
-		supportsHSTS      bool
-		isIP              bool
-		ips               []string
-		hasPunycode       bool
-		redirected        bool
-		chain             []string
-		trusted           bool
-		risky             bool
-		trusted_tld_icann bool
-		risky_tld_icann   bool
-		isShortener       bool
-		statusCode        int
-		statusText        string
-		isSuccess         bool
-		isRedirect        bool
-		tooLong           bool
-		tooDeep           bool
-		age               string
-		domainInfo        *domaininfo.RegistrationData
+		rankValue            int
+		supportsHSTS         bool
+		isIP                 bool
+		ips                  []string
+		hasPunycode          bool
+		IsRedirected         bool
+		statusCodeIsRedirect bool
+		chain                []string
+		trusted              bool
+		risky                bool
+		trusted_tld_icann    bool
+		// risky_tld_icann      bool
+		isShortener          bool
+		statusCode           int
+		statusText           string
+		isSuccess            bool
+		tooLong              bool
+		tooDeep              bool
+		keywordPresent       bool
+		keywordMatches       []string
+		keywordCategories    map[string][]string
+		nameserversReachable bool
+		mxRecordsConfigured  bool
+		subdomainCount       int
+		finalURL             string
+		chainLength          int
+		// screenshotFileName string
+		// screenshotURL      string
+		domainInfo *domaininfo.RegistrationData
 	)
 
 	// ---------- Concurrent Checks ----------
 
-	wg.Add(11)
-
 	// Check: Domain Rank
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		start := time.Now()
@@ -89,6 +170,7 @@ func AnalyzeURLHandler(c *gin.Context) {
 	}()
 
 	// Check: HSTS Support
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		start := time.Now()
@@ -109,6 +191,7 @@ func AnalyzeURLHandler(c *gin.Context) {
 	}()
 
 	// Check: Uses IP Instead of Domain
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		start := time.Now()
@@ -129,6 +212,7 @@ func AnalyzeURLHandler(c *gin.Context) {
 	}()
 
 	// Check: Get IP addresses
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		start := time.Now()
@@ -149,6 +233,7 @@ func AnalyzeURLHandler(c *gin.Context) {
 	}()
 
 	// Check: Contains Punycode
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		start := time.Now()
@@ -169,6 +254,7 @@ func AnalyzeURLHandler(c *gin.Context) {
 	}()
 
 	// Check: Redirect Chain
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		start := time.Now()
@@ -176,20 +262,23 @@ func AnalyzeURLHandler(c *gin.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			isRedir, redirChain, err := checks.CheckRedirects(url)
+			isRedir, redirChain, finURL, chainLen, err := checks.CheckRedirects(url)
 			if err != nil {
 				errors <- "redirect check failed"
 				return
 			}
 			mu.Lock()
-			redirected = isRedir
+			IsRedirected = isRedir
 			chain = redirChain
+			finalURL = finURL
+			chainLength = chainLen
 			timings["redirect_check"] = time.Since(start).String()
 			mu.Unlock()
 		}
 	}()
 
 	// Check: Trusted and Risky TLD
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		start := time.Now()
@@ -198,18 +287,19 @@ func AnalyzeURLHandler(c *gin.Context) {
 			return
 		default:
 			t, ict := checks.IsTrustedTld(domain)
-			r, icr := checks.IsRiskyTld(domain)
+			r, _ := checks.IsRiskyTld(domain)
 			mu.Lock()
 			trusted = t
 			trusted_tld_icann = ict
 			risky = r
-			risky_tld_icann = icr
+			// risky_tld_icann = icr
 			timings["tld_check"] = time.Since(start).String()
 			mu.Unlock()
 		}
 	}()
 
 	// Check: Is URL Shortener
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		start := time.Now()
@@ -226,6 +316,7 @@ func AnalyzeURLHandler(c *gin.Context) {
 	}()
 
 	// Check: HTTP Status Code
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		start := time.Now()
@@ -242,13 +333,63 @@ func AnalyzeURLHandler(c *gin.Context) {
 			statusCode = code
 			statusText = text
 			isSuccess = success
-			isRedirect = redirect
+			statusCodeIsRedirect = redirect
 			timings["status_code_check"] = time.Since(start).String()
 			mu.Unlock()
 		}
 	}()
 
+	// Check: Keywords in URL
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		start := time.Now()
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			mu.Lock()
+			keywordPresent, keywordMatches, keywordCategories = checks.CheckURLKeywords(url)
+			timings["keywords_check"] = time.Since(start).String()
+			mu.Unlock()
+		}
+	}()
+
+	// Check: NS, MX Config
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		start := time.Now()
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			mu.Lock()
+			nameserversReachable, err = checks.CheckNSValidity(url)
+			mxRecordsConfigured, err = checks.CheckMXValidity(url)
+			timings["keywords_check"] = time.Since(start).String()
+			mu.Unlock()
+		}
+	}()
+
+	// Check: Subdomain
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		start := time.Now()
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			mu.Lock()
+			subdomainCount, err = checks.GetSubdomainCount(url)
+			timings["subdomain_check"] = time.Since(start).String()
+			mu.Unlock()
+		}
+	}()
+
 	// Check: URL Structure - Length & Depth
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		start := time.Now()
@@ -264,7 +405,8 @@ func AnalyzeURLHandler(c *gin.Context) {
 		}
 	}()
 
-	// ---------- WHOIS Call (not concurrent-safe or fast) ----------
+	// Domain Info
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		start := time.Now()
@@ -272,18 +414,35 @@ func AnalyzeURLHandler(c *gin.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			d, a, err := domaininfo.Lookup(domain)
+			d, err := domaininfo.Lookup(domain)
 			if err != nil {
 				errors <- "whois lookup failed"
 				return
 			}
 			mu.Lock()
 			domainInfo = d
-			age = a
 			timings["whois_lookup"] = time.Since(start).String()
 			mu.Unlock()
 		}
 	}()
+
+	// // Analysis: Screenshot
+	// go func() {
+	// 	defer wg.Done()
+	// 	start := time.Now()
+	// 	select {
+	// 	case <-ctx.Done():
+	// 		return
+	// 	default:
+	// 		fn := screenshot.TakeScreenshot(url)
+	// 		mu.Lock()
+	// 		screenshotFileName = fn
+	// 		screenshotURL = fmt.Sprintf("localhost:8080/%s", screenshotFileName)
+	// 		timings["screenshot_check"] = time.Since(start).String()
+	// 		mu.Unlock()
+	// 	}
+	// }()
+	// // fmt.Sprintf("/screenshots/%s.png", domain)
 
 	// Wait for all concurrent checks (including WHOIS)
 	wg.Wait()
@@ -291,42 +450,63 @@ func AnalyzeURLHandler(c *gin.Context) {
 	// Calculate total execution time
 	totalTime := time.Since(startTime)
 
-	response := gin.H{
-		"rank":                 rankValue,
-		"supports_hsts":        supportsHSTS,
-		"uses_ip":              isIP,
-		"ip_addresses":         ips,
-		"contains_punycode":    hasPunycode,
-		"is_redirected":        redirected,
-		"chain":                chain,
-		"is_trusted_tld":       trusted,
-		"trusted_tld_is_icann": trusted_tld_icann,
-		"is_risky_tld":         risky,
-		"risky_tld_is_icann":   risky_tld_icann,
-		"is_url_shortener":     isShortener,
-		"status_code":          statusCode,
-		"status_text":          statusText,
-		"is_success":           isSuccess,
-		"is_redirect":          isRedirect,
-		"too_long":             tooLong,
-		"too_deep":             tooDeep,
-		"domain":               domain,
-		"age":                  age,
-		"domainInfo":           domainInfo,
-		"performance": gin.H{
-			"total_time": totalTime.String(),
-			"timings":    timings,
+	response := Response{
+		URL:    url,
+		Domain: domain,
+		Features: Features{
+			Rank: rankValue,
+			TLD: TLDInfo{
+				IsTrusted: trusted,
+				IsRisky:   risky,
+				IsICANN:   trusted_tld_icann,
+			},
+			URL: URLChecks{
+				IsURLShortener:   isShortener,
+				UsesIP:           isIP,
+				ContainsPunycode: hasPunycode,
+				TooLong:          tooLong,
+				TooDeep:          tooDeep,
+				SubdomainCount:   subdomainCount,
+				Keywords: Keywords{
+					HasKeywords: keywordPresent,
+					Found:       keywordMatches,
+					Categories:  keywordCategories,
+				},
+			},
+		},
+		Infrastructure: Infrastructure{
+			IPAddresses:      ips,
+			NameserversValid: nameserversReachable,
+			MXRecordsValid:   mxRecordsConfigured,
+		},
+		DomainInfo: domainInfo,
+		Analysis: Analysis{
+			IsRedirected:           IsRedirected,
+			RedirectionChain:       chain,
+			RedirectionChainLength: chainLength,
+			RedirectionFinalURL:    finalURL,
+			SupportsHSTS:           supportsHSTS,
+			HTTPStatus: HTTPStatus{
+				Code:                 statusCode,
+				Text:                 statusText,
+				Success:              isSuccess,
+				IsRedirectStatusCode: statusCodeIsRedirect,
+			},
+		},
+		Performance: Performance{
+			TotalTime: totalTime.String(),
+			Timings:   timings,
 		},
 	}
 
 	// Flag incomplete result if any error occurred or timeout triggered
 	if ctx.Err() != nil || len(errors) > 0 {
-		response["incomplete"] = true
+		response.Incomplete = true
 		errList := []string{}
 		for len(errors) > 0 {
 			errList = append(errList, <-errors)
 		}
-		response["errors"] = errList
+		response.Errors = errList
 	}
 
 	c.JSON(http.StatusOK, response)

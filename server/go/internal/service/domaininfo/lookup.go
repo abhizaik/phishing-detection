@@ -5,28 +5,31 @@ import (
 )
 
 // Lookup tries RDAP first, falls back to WHOIS if RDAP fails.
-// Returns: (domaininfo, age as string, error)
-func Lookup(domain string) (*RegistrationData, string, error) {
+func Lookup(domain string) (*RegistrationData, error) {
 	// Try RDAP first
 	rdapData, err := fetchRDAP(domain)
 	if err == nil && rdapData != nil {
-		age, err := checks.GetDomainAge(rdapData.CreatedDate)
+		ageHuman, ageDays, err := checks.GetDomainAge(rdapData.CreatedDate)
 		if err != nil {
-			return rdapData, "Age calculation failed (RDAP)", err
+			return rdapData, err
 		}
-		return rdapData, age, nil
+		rdapData.AgeHuman = ageHuman
+		rdapData.AgeDays = ageDays
+		return rdapData, nil
 	}
 
 	// RDAP failed, fall back to WHOIS
 	whoisData, err := GetWhoisData(domain)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
-	age, err := checks.GetDomainAge(whoisData.CreatedDate)
+	ageHuman, ageDays, err := checks.GetDomainAge(whoisData.CreatedDate)
 	if err != nil {
-		return whoisData, "Age calculation failed (WHOIS)", err
+		return whoisData, err
 	}
+	whoisData.AgeHuman = ageHuman
+	whoisData.AgeDays = ageDays
 
-	return whoisData, age, nil
+	return whoisData, nil
 }

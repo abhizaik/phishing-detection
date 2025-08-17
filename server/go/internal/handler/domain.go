@@ -27,7 +27,7 @@ func DomainInfoHandler(c *gin.Context) {
 		return
 	}
 
-	domainInfo, age, err := domaininfo.Lookup(domain)
+	domainInfo, err := domaininfo.Lookup(domain)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":  "domainInfo lookup failed",
@@ -38,7 +38,6 @@ func DomainInfoHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"domain":     domain,
-		"age":        age,
 		"domainInfo": domainInfo,
 	})
 }

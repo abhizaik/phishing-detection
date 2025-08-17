@@ -13,7 +13,7 @@ func GetStatusCode(url string) (int, string, bool, bool, error) {
 	statusCode := resp.StatusCode
 	statusText := http.StatusText(statusCode)
 	isSuccess := statusCode >= 200 && statusCode < 300
-	isRedirect := statusCode >= 300 && statusCode < 400
+	isRedirectStatusCode := statusCode >= 300 && statusCode < 400
 
-	return statusCode, statusText, isSuccess, isRedirect, nil
+	return statusCode, statusText, isSuccess, isRedirectStatusCode, nil
 }

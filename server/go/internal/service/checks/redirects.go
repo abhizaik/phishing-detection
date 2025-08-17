@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func CheckRedirects(rawURL string) (bool, []string, error) {
+func CheckRedirects(rawURL string) (isRedirected bool, chain []string, finalURL string, chainLength int, err error) {
 	var redirects []string
 
 	client := &http.Client{
@@ -21,15 +21,21 @@ func CheckRedirects(rawURL string) (bool, []string, error) {
 
 	resp, err := client.Get(rawURL)
 	if err != nil {
-		return false, nil, err
+		return false, nil, "", 0, err
 	}
 	defer resp.Body.Close()
 
 	// Initial request is not counted, so add it if any redirects happened
 	if len(redirects) > 0 {
-		redirects = append([]string{rawURL}, redirects...)
-		return true, redirects, nil
+		chain = append([]string{rawURL}, redirects...)
+		isRedirected = true
+	} else {
+		chain = []string{rawURL}
+		isRedirected = false
 	}
 
-	return false, []string{rawURL}, nil
+	chainLength = len(chain)
+	finalURL = chain[chainLength-1]
+
+	return isRedirected, chain, finalURL, chainLength, nil
 }

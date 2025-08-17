@@ -21,6 +21,20 @@ func GetDomain(rawURL string) (string, error) {
 	}
 
 	host := parsedURL.Hostname()
+	domain, err := publicsuffix.EffectiveTLDPlusOne(host)
+	if err != nil {
+		return "", err
+	}
+	return domain, nil
+}
+
+func GetHost(rawURL string) (string, error) {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return "", err
+	}
+
+	host := parsedURL.Hostname()
 	return host, nil
 }
 
@@ -37,10 +51,10 @@ func IsValidURL(rawURL string) (*url.URL, bool, error) {
 	return parsed, parsed.Scheme != "" && parsed.Host != "", nil
 }
 
-func GetDomainAge(created time.Time) (string, error) {
+func GetDomainAge(created time.Time) (string, int, error) {
 	now := time.Now()
 	if created.After(now) {
-		return "not yet registered", nil
+		return "not yet registered", 0, nil
 	}
 
 	years := now.Year() - created.Year()
@@ -55,13 +69,13 @@ func GetDomainAge(created time.Time) (string, error) {
 	if years <= 0 && months <= 0 {
 		switch {
 		case days == 0:
-			return "registered today", nil
+			return "registered today", days, nil
 		case days == 1:
-			return "1 day old", nil
+			return "1 day old", days, nil
 		case days < 30:
-			return fmt.Sprintf("%d days old", days), nil
+			return fmt.Sprintf("%d days old", days), days, nil
 		default:
-			return "less than a month old", nil
+			return "less than a month old", days, nil
 		}
 	}
 
@@ -80,5 +94,5 @@ func GetDomainAge(created time.Time) (string, error) {
 			parts = append(parts, fmt.Sprintf("%d months", months))
 		}
 	}
-	return strings.Join(parts, " "), nil
+	return strings.Join(parts, " "), days, nil
 }

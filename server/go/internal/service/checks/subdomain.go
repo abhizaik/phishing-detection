@@ -11,7 +11,7 @@ import (
 
 func GetSubdomainCount(rawURL string) (int, error) {
 
-	host, err := GetDomain(rawURL)
+	host, err := GetHost(rawURL)
 	if err != nil {
 		return 0, err
 	}
