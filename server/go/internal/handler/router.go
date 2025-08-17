@@ -29,7 +29,9 @@ func SetupRouter() *gin.Engine {
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/health", HealthHandler)
+		v1.GET("/test", TestApiHandler)
 
+		v1.GET("/analyze", AnalyzeURLHandler)
 		v1.GET("/rank", GetDomainRankHandler)
 		v1.GET("/ip/check", CheckIfUsesIPHandler)
 		v1.GET("/ip/resolve", ResolveIPHandler)
@@ -42,7 +44,7 @@ func SetupRouter() *gin.Engine {
 		v1.GET("/risky-tld", CheckRiskyTLDHandler)
 		v1.GET("/url-shortener", CheckUrlShortenerHandler)
 		v1.GET("/status-code", CheckStatusCodeHandler)
-		v1.GET("/whois", WhoisHandler)
+		v1.GET("/domain-info", DomainInfoHandler)
 
 	}
 
