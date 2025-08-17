@@ -4,10 +4,11 @@ import (
 	"net/http"
 
 	"github.com/abhizaik/SafeSurf/internal/service/checks"
+	"github.com/abhizaik/SafeSurf/internal/service/domaininfo"
 	"github.com/gin-gonic/gin"
 )
 
-func WhoisHandler(c *gin.Context) {
+func DomainInfoHandler(c *gin.Context) {
 	rawURL := c.Query("url")
 	if rawURL == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "url query param is required"})
@@ -26,10 +27,10 @@ func WhoisHandler(c *gin.Context) {
 		return
 	}
 
-	whoisData, age, err := checks.GetWhoisData(domain)
+	domainInfo, age, err := domaininfo.Lookup(domain)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":  "whois lookup failed",
+			"error":  "domainInfo lookup failed",
 			"detail": err.Error(),
 		})
 		return
@@ -38,9 +39,6 @@ func WhoisHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"domain":     domain,
 		"age":        age,
-		"created_at": whoisData.Domain.CreatedDate,
-		"expires_at": whoisData.Domain.ExpirationDate,
-		"registrar":  whoisData.Registrar.Name,
-		"raw_data":   whoisData,
+		"domainInfo": domainInfo,
 	})
 }
