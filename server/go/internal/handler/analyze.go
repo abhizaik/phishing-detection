@@ -74,9 +74,9 @@ type Result struct {
 }
 
 type Reasons struct {
-	NeutralReasons []string `json:"neutral_resons"`
-	GoodReasons    []string `json:"good_resons"`
-	BadReasons     []string `json:"bad_resons"`
+	NeutralReasons []string `json:"neutral_reasons"`
+	GoodReasons    []string `json:"good_reasons"`
+	BadReasons     []string `json:"bad_reasons"`
 }
 
 type URLChecks struct {
@@ -552,7 +552,7 @@ func GenerateResult(resp Response) ([]string, []string, []string) {
 
 	// Rank
 	if resp.Features.Rank == 0 {
-		badReasons = append(badReasons, fmt.Sprintf("Domain rank is 10,00,000+ (very low reputation)", resp.Features.Rank))
+		badReasons = append(badReasons, fmt.Sprintf("Domain rank is 10,00,000+ (very low reputation)"))
 	} else if resp.Features.Rank > 0 && resp.Features.Rank <= 10000 {
 		goodReasons = append(goodReasons, fmt.Sprintf("Domain rank is #%d globally (high reputation)", resp.Features.Rank))
 	} else if resp.Features.Rank > 50000 {
