@@ -1,0 +1,151 @@
+package analyzer
+
+import (
+	"sync"
+	"time"
+
+	"github.com/abhizaik/SafeSurf/internal/service/domaininfo"
+)
+
+// Response and related public types mirror the handler's previous structs
+type Response struct {
+	URL            string                       `json:"url"`
+	Domain         string                       `json:"domain"`
+	Features       Features                     `json:"features"`
+	Infrastructure Infrastructure               `json:"infrastructure"`
+	DomainInfo     *domaininfo.RegistrationData `json:"domain_info"`
+	Analysis       Analysis                     `json:"analysis"`
+	Performance    Performance                  `json:"performance"`
+	Result         Result                       `json:"result"`
+	Incomplete     bool                         `json:"incomplete"`
+	Errors         []string                     `json:"errors"`
+}
+
+type Features struct {
+	Rank int       `json:"rank"`
+	TLD  TLDInfo   `json:"tld"`
+	URL  URLChecks `json:"url"`
+}
+
+type TLDInfo struct {
+	IsTrusted bool `json:"is_trusted_tld"`
+	IsRisky   bool `json:"is_risky_tld"`
+	IsICANN   bool `json:"is_icann"`
+}
+
+type Keywords struct {
+	HasKeywords bool                `json:"has_keywords"`
+	Found       []string            `json:"found"`
+	Categories  map[string][]string `json:"categories"`
+}
+
+type URLChecks struct {
+	IsURLShortener   bool     `json:"url_shortener"`
+	UsesIP           bool     `json:"uses_ip"`
+	ContainsPunycode bool     `json:"contains_punycode"`
+	TooLong          bool     `json:"too_long"`
+	TooDeep          bool     `json:"too_deep"`
+	SubdomainCount   int      `json:"subdomain_count"`
+	Keywords         Keywords `json:"keywords"`
+}
+
+type Infrastructure struct {
+	IPAddresses      []string `json:"ip_addresses"`
+	NameserversValid bool     `json:"nameservers_valid"`
+	MXRecordsValid   bool     `json:"mx_records_valid"`
+}
+
+type HTTPStatus struct {
+	Code                 int    `json:"code"`
+	Text                 string `json:"text"`
+	Success              bool   `json:"success"`
+	IsRedirectStatusCode bool   `json:"is_redirect"`
+}
+
+type Analysis struct {
+	IsRedirected           bool       `json:"is_redirected"`
+	RedirectionChain       []string   `json:"redirection_chain"`
+	RedirectionChainLength int        `json:"redirection_chain_length"`
+	RedirectionFinalURL    string     `json:"redirection_final_url"`
+	HTTPStatus             HTTPStatus `json:"http_status"`
+	SupportsHSTS           bool       `json:"is_hsts_supported"`
+}
+
+type Result struct {
+	RiskScore  int     `json:"risk_score"`
+	TrustScore int     `json:"trust_score"`
+	Verdict    string  `json:"verdict"`
+	Reasons    Reasons `json:"resons"`
+}
+
+type Reasons struct {
+	NeutralReasons []string `json:"neutral_reasons"`
+	GoodReasons    []string `json:"good_reasons"`
+	BadReasons     []string `json:"bad_reasons"`
+}
+
+type Performance struct {
+	TotalTime string            `json:"total_time"`
+	Timings   map[string]string `json:"timings"`
+}
+
+// Internal inputs/outputs for analyzer pipeline
+type Input struct {
+	URL    string
+	Domain string
+}
+
+type Output struct {
+	mu sync.Mutex
+
+	Timings map[string]string
+
+	// features
+	Rank       int
+	TLDTrusted bool
+	TLDRisky   bool
+	TLDICANN   bool
+
+	URLIsShortener     bool
+	URLUsesIP          bool
+	URLContainsPuny    bool
+	URLTooLong         bool
+	URLTooDeep         bool
+	URLSubdomainCount  int
+	URLKeywordsPresent bool
+	URLKeywordMatches  []string
+	URLKeywordCats     map[string][]string
+
+	// infra
+	IPs     []string
+	NSValid bool
+	MXValid bool
+
+	// analysis
+	IsRedirected     bool
+	RedirectChain    []string
+	RedirectFinalURL string
+	RedirectChainLen int
+	SupportsHSTS     bool
+	StatusCode       int
+	StatusText       string
+	StatusSuccess    bool
+	StatusIsRedirect bool
+
+	DomainInfo *domaininfo.RegistrationData
+}
+
+func (o *Output) setTiming(name string, d time.Duration) {
+	o.mu.Lock()
+	if o.Timings == nil {
+		o.Timings = map[string]string{}
+	}
+	o.Timings[name] = d.String()
+	o.mu.Unlock()
+}
+
+// Task represents a single analyzer unit of work
+type Task interface {
+	Name() string
+	Run(in *Input, out *Output) error
+}
