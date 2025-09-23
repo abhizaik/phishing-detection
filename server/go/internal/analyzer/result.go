@@ -36,6 +36,11 @@ func GenerateResult(resp Response) ([]string, []string, []string) {
 		badReasons = append(badReasons, "Domain uses a TLD which is not under ICANN")
 	}
 
+	// HSTS
+	if resp.Analysis.SupportsHSTS {
+		goodReasons = append(goodReasons, "Domain supports HSTS, common practice among legit entites.")
+	}
+
 	// URL Shortener
 	if resp.Features.URL.IsURLShortener {
 		badReasons = append(badReasons, "Domain is of a URL shortener, might be used to hide the actual URL")
@@ -111,12 +116,21 @@ func GenerateResult(resp Response) ([]string, []string, []string) {
 	}
 
 	// Redirect chain
-	if resp.Analysis.IsRedirected {
-		if resp.Analysis.RedirectionChainLength > 3 {
-			badReasons = append(badReasons, fmt.Sprintf("Redirect chain is long (%d hops)", resp.Analysis.RedirectionChainLength))
+	if resp.Analysis.RedirectionResult.IsRedirected {
+		if resp.Analysis.RedirectionResult.ChainLength > 3 {
+			badReasons = append(badReasons, fmt.Sprintf("Redirect chain is long (%d hops)", resp.Analysis.RedirectionResult.ChainLength))
 		} else {
-			goodReasons = append(goodReasons, fmt.Sprintf("Redirect chain length is %d → normal", resp.Analysis.RedirectionChainLength))
+			goodReasons = append(goodReasons, fmt.Sprintf("Redirect chain length is %d → normal", resp.Analysis.RedirectionResult.ChainLength))
 		}
+
+		if resp.Analysis.RedirectionResult.HasDomainJump {
+			badReasons = append(badReasons, fmt.Sprintf("Website jumps to different domain than the original one, very risky."))
+		}
+	}
+
+	// Homoglyph
+	if resp.Features.URL.HasHomoglyph {
+		badReasons = append(badReasons, fmt.Sprintf("Has homoglyphs, special characters used to spoof legit websites, very risky."))
 	}
 
 	return neutralReasons, goodReasons, badReasons

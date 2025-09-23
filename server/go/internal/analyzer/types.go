@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/abhizaik/SafeSurf/internal/service/checks"
 	"github.com/abhizaik/SafeSurf/internal/service/domaininfo"
 )
 
@@ -45,6 +46,7 @@ type URLChecks struct {
 	ContainsPunycode bool     `json:"contains_punycode"`
 	TooLong          bool     `json:"too_long"`
 	TooDeep          bool     `json:"too_deep"`
+	HasHomoglyph     bool     `json:"has_homoglyph"`
 	SubdomainCount   int      `json:"subdomain_count"`
 	Keywords         Keywords `json:"keywords"`
 }
@@ -63,12 +65,12 @@ type HTTPStatus struct {
 }
 
 type Analysis struct {
-	IsRedirected           bool       `json:"is_redirected"`
-	RedirectionChain       []string   `json:"redirection_chain"`
-	RedirectionChainLength int        `json:"redirection_chain_length"`
-	RedirectionFinalURL    string     `json:"redirection_final_url"`
-	HTTPStatus             HTTPStatus `json:"http_status"`
-	SupportsHSTS           bool       `json:"is_hsts_supported"`
+	RedirectionResult checks.RedirectionResult `json:"redirection_result"`
+	// RedirectionChain       []string   `json:"redirection_chain"`
+	// RedirectionChainLength int        `json:"redirection_chain_length"`
+	// RedirectionFinalURL    string     `json:"redirection_final_url"`
+	HTTPStatus   HTTPStatus `json:"http_status"`
+	SupportsHSTS bool       `json:"is_hsts_supported"`
 }
 
 type Result struct {
@@ -115,6 +117,8 @@ type Output struct {
 	URLKeywordsPresent bool
 	URLKeywordMatches  []string
 	URLKeywordCats     map[string][]string
+	DomainRandomness   checks.DomainRandomnessResult
+	HomoglyphPresent   bool
 
 	// infra
 	IPs     []string
@@ -122,17 +126,17 @@ type Output struct {
 	MXValid bool
 
 	// analysis
-	IsRedirected     bool
-	RedirectChain    []string
-	RedirectFinalURL string
-	RedirectChainLen int
-	SupportsHSTS     bool
-	StatusCode       int
-	StatusText       string
-	StatusSuccess    bool
-	StatusIsRedirect bool
+	RedirectionResult checks.RedirectionResult
+	SupportsHSTS      bool
+	StatusCode        int
+	StatusText        string
+	StatusSuccess     bool
+	StatusIsRedirect  bool
 
-	DomainInfo *domaininfo.RegistrationData
+	DomainInfo  *domaininfo.RegistrationData
+	SSLInfo     checks.SSLCertResult
+	ContentData *checks.PageFormResult
+	TLSInfo     checks.TLSResult
 }
 
 func (o *Output) setTiming(name string, d time.Duration) {

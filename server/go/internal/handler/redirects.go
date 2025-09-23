@@ -20,16 +20,13 @@ func CheckRedirectsHandler(c *gin.Context) {
 		return
 	}
 
-	redirected, chain, finalURL, chainLength, err := checks.CheckRedirects(rawURL)
+	redir, err := checks.CheckRedirects(rawURL)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"is_redirected": redirected,
-		"chain":         chain,
-		"finalURL":      finalURL,
-		"chainLength":   chainLength,
+		"redirection_result": redir,
 	})
 }

@@ -82,15 +82,12 @@ type redirectsTask struct{}
 
 func (redirectsTask) Name() string { return "redirect_check" }
 func (redirectsTask) Run(in *Input, out *Output) error {
-	redir, chain, final, clen, err := checks.CheckRedirects(in.URL)
+	redir, err := checks.CheckRedirects(in.URL)
 	if err != nil {
 		return err
 	}
 	out.mu.Lock()
-	out.IsRedirected = redir
-	out.RedirectChain = chain
-	out.RedirectFinalURL = final
-	out.RedirectChainLen = clen
+	out.RedirectionResult = redir
 	out.mu.Unlock()
 	return nil
 }
@@ -192,7 +189,7 @@ func (subdomainTask) Run(in *Input, out *Output) error {
 	return nil
 }
 
-// WHOIS/RDAP domain info
+// Domain info
 type whoisTask struct{}
 
 func (whoisTask) Name() string { return "whois_lookup" }
@@ -203,6 +200,71 @@ func (whoisTask) Run(in *Input, out *Output) error {
 	}
 	out.mu.Lock()
 	out.DomainInfo = di
+	out.mu.Unlock()
+	return nil
+}
+
+// SSL info
+type sslTask struct{}
+
+func (sslTask) Name() string { return "ssl_check" }
+func (sslTask) Run(in *Input, out *Output) error {
+	sslInfo := checks.AnalyzeSSLCert(in.Domain)
+
+	out.mu.Lock()
+	out.SSLInfo = sslInfo
+	out.mu.Unlock()
+	return nil
+}
+
+// Entropy
+type entropyTask struct{}
+
+func (entropyTask) Name() string { return "entropy_check" }
+func (entropyTask) Run(in *Input, out *Output) error {
+	r := checks.AnalyzeDomainRandomness(in.Domain)
+
+	out.mu.Lock()
+	out.DomainRandomness = r
+	out.mu.Unlock()
+	return nil
+}
+
+// Page content
+type contentTask struct{}
+
+func (contentTask) Name() string { return "content_check" }
+func (contentTask) Run(in *Input, out *Output) error {
+	c, _ := checks.GetPageFormInfo(in.Domain)
+
+	out.mu.Lock()
+	out.ContentData = c
+	out.mu.Unlock()
+	return nil
+}
+
+// TLS
+type tlsTask struct{}
+
+func (tlsTask) Name() string { return "tls_check" }
+func (tlsTask) Run(in *Input, out *Output) error {
+	t, _ := checks.GetTLSInfo(in.Domain)
+
+	out.mu.Lock()
+	out.TLSInfo = t
+	out.mu.Unlock()
+	return nil
+}
+
+// Homoglyph
+type homoglyphTask struct{}
+
+func (homoglyphTask) Name() string { return "homoglyph_check" }
+func (homoglyphTask) Run(in *Input, out *Output) error {
+	h, _ := checks.HasHomoglyphs(in.Domain)
+
+	out.mu.Lock()
+	out.HomoglyphPresent = h
 	out.mu.Unlock()
 	return nil
 }

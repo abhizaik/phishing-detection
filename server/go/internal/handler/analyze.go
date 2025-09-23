@@ -19,7 +19,7 @@ func AnalyzeURLHandler(c *gin.Context) {
 
 	_, isValid, err := checks.IsValidURL(url)
 	if err != nil || !isValid {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid url"})
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "error": "invalid url"})
 		return
 	}
 

@@ -3,15 +3,23 @@ package checks
 import (
 	"errors"
 	"net/http"
+	"net/url"
 )
 
-func CheckRedirects(rawURL string) (isRedirected bool, chain []string, finalURL string, chainLength int, err error) {
+type RedirectionResult struct {
+	IsRedirected  bool     `json:"is_redirected"`
+	ChainLength   int      `json:"chain_length"`
+	Chain         []string `json:"chain"`
+	FinalURL      string   `json:"final_url"`
+	HasDomainJump bool     `json:"has_domain_jump"`
+}
+
+func CheckRedirects(rawURL string) (RedirectionResult, error) {
 	var redirects []string
 
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			redirects = append(redirects, req.URL.String())
-			// Continue following
 			if len(via) >= 10 {
 				return errors.New("stopped after 10 redirects")
 			}
@@ -21,21 +29,37 @@ func CheckRedirects(rawURL string) (isRedirected bool, chain []string, finalURL 
 
 	resp, err := client.Get(rawURL)
 	if err != nil {
-		return false, nil, "", 0, err
+		return RedirectionResult{}, err
 	}
 	defer resp.Body.Close()
 
-	// Initial request is not counted, so add it if any redirects happened
-	if len(redirects) > 0 {
-		chain = append([]string{rawURL}, redirects...)
-		isRedirected = true
-	} else {
-		chain = []string{rawURL}
-		isRedirected = false
+	chain := append([]string{rawURL}, redirects...)
+	finalURL := chain[len(chain)-1]
+
+	// Detect domain jumps
+	parsedStart, err := url.Parse(rawURL)
+	if err != nil {
+		return RedirectionResult{}, err
+	}
+	origDomain := parsedStart.Host
+	hasJump := false
+
+	for _, u := range chain[1:] {
+		parsed, err := url.Parse(u)
+		if err != nil {
+			continue
+		}
+		if parsed.Host != origDomain {
+			hasJump = true
+			break
+		}
 	}
 
-	chainLength = len(chain)
-	finalURL = chain[chainLength-1]
-
-	return isRedirected, chain, finalURL, chainLength, nil
+	return RedirectionResult{
+		IsRedirected:  len(redirects) > 0,
+		Chain:         chain,
+		FinalURL:      finalURL,
+		ChainLength:   len(chain),
+		HasDomainJump: hasJump,
+	}, nil
 }

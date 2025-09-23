@@ -38,6 +38,11 @@ func Analyze(ctx context.Context, rawURL string) (Response, []error) {
 		dnsValidityTask{},
 		subdomainTask{},
 		whoisTask{},
+		sslTask{},
+		entropyTask{},
+		tlsTask{},
+		contentTask{},
+		homoglyphTask{},
 	}
 
 	out, errs := runTasks(ctx, in, tasks)
@@ -59,6 +64,7 @@ func Analyze(ctx context.Context, rawURL string) (Response, []error) {
 				TooLong:          out.URLTooLong,
 				TooDeep:          out.URLTooDeep,
 				SubdomainCount:   out.URLSubdomainCount,
+				HasHomoglyph:     out.HomoglyphPresent,
 				Keywords: Keywords{
 					HasKeywords: out.URLKeywordsPresent,
 					Found:       out.URLKeywordMatches,
@@ -73,11 +79,8 @@ func Analyze(ctx context.Context, rawURL string) (Response, []error) {
 		},
 		DomainInfo: out.DomainInfo,
 		Analysis: Analysis{
-			IsRedirected:           out.IsRedirected,
-			RedirectionChain:       out.RedirectChain,
-			RedirectionChainLength: out.RedirectChainLen,
-			RedirectionFinalURL:    out.RedirectFinalURL,
-			SupportsHSTS:           out.SupportsHSTS,
+			RedirectionResult: out.RedirectionResult,
+			SupportsHSTS:      out.SupportsHSTS,
 			HTTPStatus: HTTPStatus{
 				Code:                 out.StatusCode,
 				Text:                 out.StatusText,
