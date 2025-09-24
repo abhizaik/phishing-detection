@@ -3,7 +3,6 @@ package checks
 import (
 	"errors"
 	"net/http"
-	"net/url"
 )
 
 type RedirectionResult struct {
@@ -37,19 +36,13 @@ func CheckRedirects(rawURL string) (RedirectionResult, error) {
 	finalURL := chain[len(chain)-1]
 
 	// Detect domain jumps
-	parsedStart, err := url.Parse(rawURL)
-	if err != nil {
-		return RedirectionResult{}, err
-	}
-	origDomain := parsedStart.Host
+
+	origDomain, _ := GetDomain(rawURL)
 	hasJump := false
 
 	for _, u := range chain[1:] {
-		parsed, err := url.Parse(u)
-		if err != nil {
-			continue
-		}
-		if parsed.Host != origDomain {
+		urlDomain, _ := GetDomain(u)
+		if urlDomain != origDomain {
 			hasJump = true
 			break
 		}

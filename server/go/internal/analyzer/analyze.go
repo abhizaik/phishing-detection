@@ -94,10 +94,8 @@ func Analyze(ctx context.Context, rawURL string) (Response, []error) {
 		},
 	}
 
-	neutral, good, bad := GenerateResult(resp)
-	resp.Result.Reasons.NeutralReasons = neutral
-	resp.Result.Reasons.GoodReasons = good
-	resp.Result.Reasons.BadReasons = bad
+	result := GenerateResult(resp)
+	resp.Result = result
 
 	if len(errs) > 0 {
 		resp.Incomplete = true
