@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -18,10 +19,10 @@ func GenerateResult(resp Response) Result {
 		riskScore += 20
 	} else if resp.Features.Rank > 0 && resp.Features.Rank <= 10000 {
 		goodReasons = append(goodReasons, fmt.Sprintf("Domain rank is #%d globally (high reputation)", resp.Features.Rank))
-		trustScore += 20
+		trustScore += 90
 	} else if resp.Features.Rank > 50000 {
 		goodReasons = append(goodReasons, fmt.Sprintf("Domain rank is #%d (medium reputation)", resp.Features.Rank))
-		trustScore += 10
+		trustScore += 50
 	} else {
 		neutralReasons = append(neutralReasons, fmt.Sprintf("Domain rank is #%d (low reputation)", resp.Features.Rank))
 	}
@@ -34,50 +35,50 @@ func GenerateResult(resp Response) Result {
 
 	if resp.Features.TLD.IsTrusted {
 		goodReasons = append(goodReasons, "Domain uses a trusted TLD, verified by registry")
-		trustScore += 15
+		trustScore += 100
 	} else if resp.Features.TLD.IsICANN && !resp.Features.TLD.IsRisky {
 		neutralReasons = append(neutralReasons, "Domain uses a normal TLD")
 	}
 
 	if !resp.Features.TLD.IsICANN {
 		badReasons = append(badReasons, "Domain uses a TLD which is not under ICANN")
-		riskScore += 10
+		riskScore += 30
 	}
 
 	// HSTS
 	if resp.Analysis.SupportsHSTS {
 		goodReasons = append(goodReasons, "Domain supports HSTS, common in legit sites")
-		trustScore += 10
+		trustScore += 20
 	}
 
 	// URL Shortener
 	if resp.Features.URL.IsURLShortener {
 		badReasons = append(badReasons, "Domain is a URL shortener, often used to hide real destination")
-		riskScore += 15
+		riskScore += 25
 	}
 
 	// Uses IP
 	if resp.Features.URL.UsesIP {
 		badReasons = append(badReasons, "IP instead of domain, not used by trusted entities")
-		riskScore += 25
+		riskScore += 100
 	}
 
 	// Punycode
 	if resp.Features.URL.ContainsPunycode {
 		badReasons = append(badReasons, "URL contains punycode, might spoof original entities")
-		riskScore += 20
+		riskScore += 100
 	}
 
 	// Too deep
 	if resp.Features.URL.TooDeep {
 		badReasons = append(badReasons, "URL has many slashes (too deep), suspicious")
-		riskScore += 10
+		riskScore += 30
 	}
 
 	// Too long
 	if resp.Features.URL.TooLong {
 		badReasons = append(badReasons, "URL is too long, may be hiding malicious parts")
-		riskScore += 10
+		riskScore += 20
 	}
 
 	// Subdomain Count
@@ -89,7 +90,7 @@ func GenerateResult(resp Response) Result {
 	// Keywords
 	if resp.Features.URL.Keywords.HasKeywords {
 		badReasons = append(badReasons, fmt.Sprintf("URL has sensitive keywords like %s", strings.Join(resp.Features.URL.Keywords.Found, ", ")))
-		riskScore += 20
+		riskScore += 10
 	}
 
 	// Nameservers
@@ -125,7 +126,7 @@ func GenerateResult(resp Response) Result {
 			neutralReasons = append(neutralReasons, fmt.Sprintf("Domain age is %s (mature)", resp.DomainInfo.AgeHuman))
 			trustScore += 10
 		} else {
-			goodReasons = append(goodReasons, fmt.Sprintf("Domain age is %s (very old)", resp.DomainInfo.AgeHuman))
+			goodReasons = append(goodReasons, fmt.Sprintf("Domain age is %s (very mature)", resp.DomainInfo.AgeHuman))
 			trustScore += 15
 		}
 
@@ -147,7 +148,7 @@ func GenerateResult(resp Response) Result {
 	if resp.Analysis.RedirectionResult.IsRedirected {
 		if resp.Analysis.RedirectionResult.ChainLength > 3 {
 			badReasons = append(badReasons, fmt.Sprintf("Redirect chain is long (%d hops)", resp.Analysis.RedirectionResult.ChainLength))
-			riskScore += 10
+			riskScore += 40
 		} else {
 			goodReasons = append(goodReasons, fmt.Sprintf("Redirect chain length is %d (normal)", resp.Analysis.RedirectionResult.ChainLength))
 			trustScore += 5
@@ -155,24 +156,32 @@ func GenerateResult(resp Response) Result {
 
 		if resp.Analysis.RedirectionResult.HasDomainJump {
 			badReasons = append(badReasons, "Website jumps to a different domain (very risky)")
-			riskScore += 20
+			riskScore += 50
 		}
 	}
 
 	// Homoglyph
 	if resp.Features.URL.HasHomoglyph {
 		badReasons = append(badReasons, "Has homoglyphs, may spoof legit websites")
-		riskScore += 20
+		riskScore += 60
 	}
 
 	// --- Normalize / cap scores ---
-	if riskScore > 100 {
-		riskScore = 100
-	}
-	if trustScore > 100 {
-		trustScore = 100
-	}
+	riskScore = clamp(riskScore)
+	trustScore = clamp(trustScore)
 
+	// 1
+	// combined := int(riskScore - trustScore) // -100..100
+	// finalScore := (combined + 100) / 2
+
+	// 2
+	// trustContribution := 100 - trustScore
+	// finalScore := int(float64(riskScore)*0.7 + float64(trustContribution)*0.3)
+
+	// 3
+	finalScore := int(float64(trustScore) - float64(riskScore)*0.2)
+
+	finalScore = clamp(finalScore)
 	var verdict string
 	switch {
 	// Very risky: high risk, low trust
@@ -192,9 +201,6 @@ func GenerateResult(resp Response) Result {
 		verdict = "Unclear"
 	}
 
-	combined := int(riskScore - trustScore) // -100..100
-	finalScore := (combined + 100) / 2
-
 	res := Result{
 		RiskScore:  riskScore,
 		TrustScore: trustScore,
@@ -210,3 +216,6 @@ func GenerateResult(resp Response) Result {
 	return res
 }
 
+func clamp(score int) int {
+	return int(math.Max(0, math.Min(100, float64(score))))
+}

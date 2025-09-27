@@ -78,7 +78,7 @@ type Result struct {
 	TrustScore int     `json:"trust_score"`
 	FinalScore int     `json:"final_score"`
 	Verdict    string  `json:"verdict"`
-	Reasons    Reasons `json:"resons"`
+	Reasons    Reasons `json:"reasons"`
 }
 
 type Reasons struct {
@@ -154,4 +154,3 @@ type Task interface {
 	Name() string
 	Run(in *Input, out *Output) error
 }
-
