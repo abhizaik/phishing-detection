@@ -185,16 +185,13 @@ func GenerateResult(resp Response) Result {
 	var verdict string
 	switch {
 	// Very risky: high risk, low trust
-	case riskScore >= 70 && trustScore < 40:
+	case finalScore < 50:
 		verdict = "Risky"
 	// Suspicious: moderate risk OR conflicting signals
-	case riskScore >= 40 && riskScore < 70:
-		if trustScore >= 40 {
-			verdict = "Suspicious (Trust signals present)"
-		}
+	case finalScore < 80:
 		verdict = "Suspicious"
 	// Trustworthy: low risk, high trust
-	case riskScore < 40 && trustScore >= 60:
+	case finalScore <= 80 && finalScore >= 100:
 		verdict = "Trustworthy"
 	// Unclear / low trust but also low risk
 	default:

@@ -133,7 +133,7 @@
   <div class={`max-w-4xl mx-auto px-6 ${isLanding ? 'min-h-[70vh] flex flex-col justify-center' : 'py-12'}`}>
     <header class="mb-10">
       <h1 class="text-3xl md:text-5xl font-semibold tracking-tight text-white">SafeSurf</h1>
-      <p class="mt-3 text-gray-400 text-base">Instantly assess a website’s risk with a shareable report.</p>
+      <p class="mt-3 text-gray-400 text-base">Surf safe with SafeSurf.</p>
     </header>
 
     <form class="bg-gray-950 rounded-xl border border-gray-800 p-4 md:p-5" on:submit|preventDefault={onSubmit}>
