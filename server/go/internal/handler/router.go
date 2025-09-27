@@ -46,6 +46,8 @@ func SetupRouter() *gin.Engine {
 		v1.GET("/status-code", CheckStatusCodeHandler)
 		v1.GET("/domain-info", DomainInfoHandler)
 
+		v1.GET("/screenshot", ScreenshotHandler)
+
 	}
 
 	return r
