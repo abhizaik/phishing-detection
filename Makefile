@@ -2,7 +2,7 @@
 # Project structure:
 # - Docker Compose files in ./docker/
 # - Go backend in ./server/go/
-# - Svelte frontend in ./web/
+# - Svelte frontend in ./web/website
 
 # === Variables ===
 DOCKER_DEV = docker/docker-compose.dev.yml
@@ -52,11 +52,11 @@ run-backend:
 
 ## Run Svelte frontend locally (dev server)
 run-frontend:
-	cd web && npm run dev
+	cd web/website && npm run dev
 
 ## Build Svelte frontend
 build-frontend:
-	cd web && npm install && npm run build
+	cd web/website && npm install && npm run build
 
 # === Backend Testing & Linting ===
 

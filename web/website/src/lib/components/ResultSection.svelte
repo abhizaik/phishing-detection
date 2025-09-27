@@ -78,24 +78,19 @@
     <div class="rounded-xl border border-gray-800 bg-gray-950 p-5">
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
     <div>
-      <div class="text-xs text-gray-400">Verdict</div>
+      <div class="text-xs text-gray-400">Verdict :</div>
       <div class="inline-flex items-center gap-2 mt-0.5">
         <span class="text-lg font-semibold">{primary?.verdict ?? '-'}</span>
-        {#if primary?.verdict}
-          <span class="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border"
-            class:border-emerald-700={primary.verdict === 'Safe'}
-            class:text-emerald-300={primary.verdict === 'Safe'}
-            class:border-yellow-700={primary.verdict === 'Unclear'}
-            class:text-yellow-300={primary.verdict === 'Unclear'}
-            class:border-red-700={primary.verdict === 'Risky'}
-            class:text-red-300={primary.verdict === 'Risky'}
-          >{primary.verdict}</span>
-        {/if}
+
       </div>
     </div>
 
     <div class="flex items-center justify-between text-lg font-bold text-gray-200 w-full md:w-auto">
-      <span>Trust Score : &nbsp; </span>
+      <!-- <span>Trust Score : &nbsp; </span> -->
+      <div class="text-xs text-gray-400">
+        Trust Score : &nbsp;
+      </div>
+      <div class="inline-flex items-center gap-2 mt-0.5">
       <span class="text-blue-400">{primary?.final_score ?? '-'} / 100</span>
     </div>
   </div>

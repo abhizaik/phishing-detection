@@ -191,7 +191,7 @@ func GenerateResult(resp Response) Result {
 	case finalScore < 80:
 		verdict = "Suspicious"
 	// Trustworthy: low risk, high trust
-	case finalScore <= 80 && finalScore >= 100:
+	case finalScore >= 80 && finalScore <= 100:
 		verdict = "Trustworthy"
 	// Unclear / low trust but also low risk
 	default:
