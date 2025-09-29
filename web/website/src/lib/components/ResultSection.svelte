@@ -97,9 +97,9 @@
 </div>
 
 
-    {#if reasons?.bad_reasons?.length || reasons?.good_reasons?.length}
+    <!-- {#if reasons?.bad_reasons?.length || reasons?.good_reasons?.length} -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    {#if reasons?.bad_reasons?.length}
+    {#if reasons}
       <div class="rounded-lg border border-red-900 bg-red-950/40 p-4 shadow-sm">
         <div class="text-sm font-semibold text-red-300 mb-2 flex items-center gap-2">
           <svg class="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
@@ -107,18 +107,22 @@
           </svg>
           Red flags
         </div>
-        <ul class="text-sm text-red-200 space-y-1">
-          {#each reasons.bad_reasons as r}
-            <li class="flex items-start gap-2">
-              <span class="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-red-400"></span>
-              <span>{r}</span>
-            </li>
-          {/each}
-        </ul>
-      </div>
+        {#if reasons.bad_reasons?.length}
+      <ul class="text-sm text-red-200 space-y-1">
+        {#each reasons.bad_reasons as r}
+          <li class="flex items-start gap-2">
+            <span class="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-red-400"></span>
+            <span class="break-all">{r}</span>
+          </li>
+        {/each}
+      </ul>
+    {:else}
+      <p class="text-sm text-gray-500">No red flags found.</p>
+    {/if}
+  </div>
     {/if}
 
-    {#if reasons?.good_reasons?.length}
+    {#if reasons}
       <div class="rounded-lg border border-emerald-900 bg-emerald-950/40 p-4 shadow-sm">
         <div class="text-sm font-semibold text-emerald-300 mb-2 flex items-center gap-2">
           <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
@@ -126,18 +130,23 @@
           </svg>
           Green flags
         </div>
+        
+        {#if reasons.good_reasons?.length}
         <ul class="text-sm text-emerald-200 space-y-1">
           {#each reasons.good_reasons as r}
             <li class="flex items-start gap-2">
               <span class="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-              <span>{r}</span>
+              <span class="break-all">{r}</span>
             </li>
           {/each}
         </ul>
+        {:else}
+      <p class="text-sm text-gray-500">No green flags found.</p>
+    {/if}
       </div>
     {/if}
   </div>
-{/if}
+<!-- {/if} -->
 
   {#if screenshotData}
           <div class="mt-3">
