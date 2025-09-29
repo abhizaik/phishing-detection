@@ -58,44 +58,34 @@
   screenshotData = null;
 
   try {
-    // start both requests in parallel
-    const analyzePromise = api.analyze(url);
-    const screenshotPromise = api.screenshot(url);
-
-    // handle analyze result immediately when it resolves
-    analyzePromise
-      .then((res) => {
-        if (res.error) {
-          error = res.error;
-        } else {
-          data = res.data as AnalyzeResult;
-
-          const share = new URL(window.location.href);
-          share.searchParams.set('q', url);
-          replaceState(share.toString(), {}); // ✅ safe in SvelteKit
-        }
-      })
-      .catch(() => {
-        error = 'Analyze request failed';
-      });
-
-    // handle screenshot result independently
-    screenshotPromise
+    // kick off screenshot but don't block on it
+    api.screenshot(url)
       .then((res) => {
         screenshotData = res as ScreenshotResponse;
       })
       .catch(() => {
-        // optional: handle screenshot failure silently
         console.warn('Screenshot request failed');
       });
+
+    // await analyze so loading reflects this call only
+    const res = await api.analyze(url);
+
+    if (res.error) {
+      error = res.error;
+    } else {
+      data = res.data as AnalyzeResult;
+
+      const share = new URL(window.location.href);
+      share.searchParams.set('q', url);
+      replaceState(share.toString(), {});
+    }
   } catch (err) {
-    error = 'Something went wrong. Please try again.';
+    error = 'Analyze request failed';
   } finally {
-    // this only controls overall loading, 
-    // you might want separate loading flags if needed
     loading = false;
   }
 }
+
 
 
 
