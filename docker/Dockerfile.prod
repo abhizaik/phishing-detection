@@ -10,7 +10,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -ldflags="-s -w" -o safesurf ./server/go/cmd/safesurf  # Smaller binary
+RUN go build -ldflags="-s -w" -o safesurf ./server/cmd/safesurf  # Smaller binary
 
 # Final minimal image
 FROM scratch

@@ -12,7 +12,7 @@
 
 # Go workspace stuff
 bin/
-server/go/tmp/*
+server/tmp/*
 *.prof
 *.log
 *.coverprofile

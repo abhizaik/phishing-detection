@@ -6,7 +6,7 @@ We welcome bug reports, feature requests, code, documentation, and testing help.
 
 ## Project Structure
 
-- `server/go/` – Backend (Golang)
+- `server/` – Backend (Golang)
 - `web/` – Frontend (HTML/CSS/JS or framework)
 - `docker/` – Dockerfiles & Compose configs
 - `docs/` – Project documentation
@@ -34,7 +34,7 @@ We welcome bug reports, feature requests, code, documentation, and testing help.
 ### Backend (Go)
 
 ```bash
-cd server/go
+cd server
 go mod tidy
 go run cmd/safesurf/safesurf.go
 ```

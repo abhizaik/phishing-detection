@@ -1,7 +1,7 @@
 # === Makefile for Go + Svelte App ===
 # Project structure:
 # - Docker Compose files in ./docker/
-# - Go backend in ./server/go/
+# - Go backend in ./server/
 # - Svelte frontend in ./web/website
 
 # === Variables ===
@@ -62,11 +62,11 @@ build-frontend:
 
 ## Run Go tests
 test-backend:
-	cd server/go && go test ./...
+	cd server && go test ./...
 
 ## Run Go linter
 lint-backend:
-	cd server/go && go vet ./...
+	cd server && go vet ./...
 
 # === Cleanup ===
 

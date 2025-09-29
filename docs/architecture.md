@@ -12,7 +12,7 @@ Brief description of what the system does, its main components, and what problem
 - HTML/CSS/JS frontend rendered with Go templates
 - Handles user input and shows results
 
-### 2. Backend Server (`/server/go`)
+### 2. Backend Server (`/server`)
 - Handles routing, validation, business logic
 - Exposes REST endpoints
 - Interacts with PostgreSQL and external APIs
