@@ -10,6 +10,7 @@ type RedirectionResult struct {
 	ChainLength   int      `json:"chain_length"`
 	Chain         []string `json:"chain"`
 	FinalURL      string   `json:"final_url"`
+	FinalURLHost  string   `json:"final_url_domain"`
 	HasDomainJump bool     `json:"has_domain_jump"`
 }
 
@@ -34,6 +35,7 @@ func CheckRedirects(rawURL string) (RedirectionResult, error) {
 
 	chain := append([]string{rawURL}, redirects...)
 	finalURL := chain[len(chain)-1]
+	finalURLHost, _ := GetHost(finalURL)
 
 	// Detect domain jumps
 
@@ -52,6 +54,7 @@ func CheckRedirects(rawURL string) (RedirectionResult, error) {
 		IsRedirected:  len(redirects) > 0,
 		Chain:         chain,
 		FinalURL:      finalURL,
+		FinalURLHost:  finalURLHost,
 		ChainLength:   len(chain),
 		HasDomainJump: hasJump,
 	}, nil
