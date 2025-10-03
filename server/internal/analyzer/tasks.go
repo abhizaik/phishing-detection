@@ -168,8 +168,8 @@ type dnsValidityTask struct{}
 
 func (dnsValidityTask) Name() string { return "dns_validity_check" }
 func (dnsValidityTask) Run(in *Input, out *Output) error {
-	ns, _ := checks.CheckNSValidity(in.URL)
-	mx, _ := checks.CheckMXValidity(in.URL)
+	ns, _ := checks.CheckNSValidity(in.Domain)
+	mx, _ := checks.CheckMXValidity(in.Domain)
 	out.mu.Lock()
 	out.NSValid = ns
 	out.MXValid = mx
