@@ -126,7 +126,7 @@
   <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl animate-blob animation-delay-2000 z-0"></div>
 
   <!-- Heading -->
-  <h1 class="relative text-4xl md:text-6xl font-extrabold tracking-tight text-white z-10">
+  <h1 class="relative text-6xl md:text-6xl font-extrabold tracking-tight text-white z-10">
     <a href="/" on:click={() => location.href = '/'} class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 hover:from-purple-500 hover:to-pink-500 transition-all">
       SafeSurf
     </a>
@@ -160,6 +160,17 @@
 .animate-fadeIn {
   animation: fadeIn 1s ease-out forwards;
 }
+
+/* Autofill fix for dark input added by browsers */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+      -webkit-text-fill-color: #e5e7eb; /* Tailwind text-gray-200 */
+      transition: background-color 5000s ease-in-out 0s; /* prevent yellow flash */
+      box-shadow: 0 0 0px 1000px #1f2937 inset; /* Tailwind bg-gray-900 */
+      -webkit-box-shadow: 0 0 0px 1000px #1f2937 inset;
+  }
 </style>
 
 
@@ -178,7 +189,7 @@
       id="url-input"
       type="text"
       class={`flex-1 rounded-lg bg-gray-900 border border-gray-800 px-4 py-3 text-sm placeholder-gray-500 text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 ${accent.ring} focus:shadow-lg`}
-      placeholder="Enter a URL (e.g. google.com)"
+      placeholder="Enter a URL (e.g. example.com)"
       bind:value={input}
       autocomplete="url"
       inputmode="url"
