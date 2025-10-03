@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { AnalyzeResult, ScreenshotResponse } from '../types';
+  import { browser } from '$app/environment';
   export let data: AnalyzeResult | null = null;
   export let screenshotData: ScreenshotResponse | null = null;
   export let loading = false;
@@ -12,7 +13,7 @@
   let copied = false;
   let showModal = false;
 
-  async function copyShareLink() {
+  async function copyShareLink() { // Function for first copy button, commented out as we added new Share Button
     try {
       const url = new URL(window.location.href);
       if (data?.url) {
@@ -23,6 +24,36 @@
       }
     } catch {
       error = "Could not copy link";
+    }
+  }
+
+
+  let shareCopied = false;
+  let shareUrl = '';
+  if (browser) {
+    shareUrl = window.location.href; // to only run on client-side
+  }
+
+  async function shareLink() {
+    const shareText = `Check out this SafeSurf result for ${data?.domain}`;
+    if (browser && navigator.share) {
+      try {
+        await navigator.share({
+          title: "SafeSurf",
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (err) {
+        console.error("Share failed:", err);
+      }
+    } else if (browser) {
+      try {
+        await navigator.clipboard.writeText(`${shareText} \n${shareUrl}`);
+        shareCopied = true;
+        setTimeout(() => (shareCopied = false), 1200);
+      } catch (err) {
+        console.error("Clipboard copy failed:", err);
+      }
     }
   }
 
@@ -49,7 +80,7 @@
   </div>
 
   <!-- Copy Button -->
-  <button
+  <!-- <button
     class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium transition-all {copied ? 'animate-pulse bg-emerald-700' : ''}"
     on:click={copyShareLink}
   >
@@ -64,7 +95,28 @@
       </svg>
       <span>Copy Result</span>
     {/if}
-  </button>
+  </button> -->
+
+
+<!-- Share Button -->
+    <button
+      class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium transition-all {shareCopied ? 'animate-pulse bg-emerald-700' : ''}"
+      on:click={shareLink}
+    >
+      {#if shareCopied}
+        <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+        <span class="text-emerald-300">Copied to clipboard!</span>
+      {:else}
+        <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4m4-4v14" />
+        </svg>
+
+        <span>Share Result</span>
+      {/if}
+    </button>
+
 </div>
 
 
@@ -83,7 +135,7 @@
       Be Cautious
     </span>
   {:else if primary?.verdict === 'Risky'}
-    <span class="px-3 py-1 rounded-full bg-orange-500 text-white font-medium text-xs uppercase tracking-wide">
+    <span class="px-3 py-1 rounded-full bg-red-700 text-white font-medium text-xs uppercase tracking-wide">
       High Risk
     </span>
   {:else if primary?.verdict === 'Unclear'}
@@ -96,12 +148,13 @@
     </span>
   {/if}
       </div>
-      <div class="mt-3 h-2 w-full bg-gray-800 rounded-full overflow-hidden">
+      <!-- Trust Score Percentage Bar -->
+      <!-- <div class="mt-3 h-2 w-full bg-gray-800 rounded-full overflow-hidden">
         <div
           class="h-2 bg-blue-500 rounded-full transition-all duration-700 ease-out"
           style="width:{primary?.final_score ?? 0}%"
         ></div>
-      </div>
+      </div> -->
     </div>
 
     <div class="flex-1 md:text-right flex flex-col justify-center">
@@ -187,6 +240,7 @@
   <!-- Advanced Panel Toggle -->
   <div class="mt-6 flex justify-center">
     <button
+      id="full-report-button"
       class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-0 transition-colors duration-150"
       on:click={toggleAdvanced}
       aria-expanded={showAdvanced}
@@ -366,6 +420,28 @@
           {/if}
         </section>
       {/if}
+
+      <!-- Scroll Back to Top Button -->
+      <div class="mt-6 flex justify-center">
+        <button
+          class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-0 transition-colors duration-150"
+          on:click={() => {
+              const target = document.getElementById('full-report-button'); 
+              if (target) {
+                // Scroll so the button is 100px from top
+                const offset = 100;
+                const top = target.getBoundingClientRect().top + window.scrollY - offset;
+                window.scrollTo({ top, behavior: 'smooth' });
+              }
+            }}
+          >
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M5.23 12.79a.75.75 0 001.06.02L10 8.812l3.71 3.998a.75.75 0 101.08-1.04l-4.25-4.53a.75.75 0 00-1.08 0l-4.25 4.53a.75.75 0 00.02 1.06z" clip-rule="evenodd"/>
+          </svg>
+          <!-- Scroll to Top -->
+        </button>
+      </div>
+
     <!-- </div>
   </div> -->
 
