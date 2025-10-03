@@ -12,14 +12,13 @@
   let error: string | null = null;
   let data: AnalyzeResult | null = null;
   let screenshotData: ScreenshotResponse | null = null;
-  let screenshotUrl: string | null = null;
 
-  type Verdict = 'Safe' | 'Risky' | 'Unclear' | 'Unknown';
+  type Verdict = 'Safe' | 'Risky' | 'Unclear' | 'Suspicious';
   const ACCENTS: Record<Verdict, { ring: string; glow: string; badge: string }> = {
     Safe: { ring: 'focus:ring-emerald-600', glow: 'from-emerald-600/20', badge: 'bg-emerald-600/20 text-emerald-300 border-emerald-700' },
     Risky: { ring: 'focus:ring-red-600', glow: 'from-red-600/20', badge: 'bg-red-600/20 text-red-300 border-red-700' },
     Unclear: { ring: 'focus:ring-yellow-600', glow: 'from-yellow-500/20', badge: 'bg-yellow-600/20 text-yellow-300 border-yellow-700' },
-    Unknown: { ring: 'focus:ring-yellow-600', glow: 'from-yellow-500/20', badge: 'bg-yellow-600/20 text-yellow-300 border-yellow-700' }
+    Suspicious: { ring: 'focus:ring-yellow-600', glow: 'from-yellow-500/20', badge: 'bg-yellow-600/20 text-yellow-300 border-yellow-700' }
   };
 
   function normalizeVerdict(v: string | null | undefined): Verdict {
@@ -27,10 +26,10 @@
       case 'Safe':
       case 'Risky':
       case 'Unclear':
-      case 'Unknown':
+      case 'Suspicious':
         return v;
       default:
-        return 'Unknown';
+        return 'Unclear';
     }
   }
 
@@ -61,7 +60,7 @@
     // kick off screenshot but don't block on it
     api.screenshot(url)
       .then((res) => {
-        screenshotData = res as ScreenshotResponse;
+        screenshotData = res.data as ScreenshotResponse;
       })
       .catch(() => {
         console.warn('Screenshot request failed');
@@ -121,50 +120,108 @@
 <section>
   <title>SafeSurf</title>
   <div class={`max-w-4xl mx-auto px-6 ${isLanding ? 'min-h-[70vh] flex flex-col justify-center' : 'py-12'}`}>
-    <header class="mb-10">
-      <h1 class="text-3xl md:text-5xl font-semibold tracking-tight text-white">SafeSurf</h1>
-      <p class="mt-3 text-gray-400 text-base">Surf safe with SafeSurf.</p>
-    </header>
+    <header class="relative mb-14 flex flex-col items-center md:items-start text-center md:text-left">
+  <!-- Background accent -->
+  <div class="absolute -top-10 -left-10 w-40 h-40 bg-blue-600/30 rounded-full blur-3xl animate-blob z-0"></div>
+  <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl animate-blob animation-delay-2000 z-0"></div>
 
-    <form class="bg-gray-950 rounded-xl border border-gray-800 p-4 md:p-5" on:submit|preventDefault={onSubmit}>
-      <label for="url-input" class="sr-only">URL to analyze</label>
-      <div class="flex flex-col md:flex-row gap-2">
-        <input
-          id="url-input"
-          type="text"
-          class={`flex-1 rounded-lg bg-gray-900 border border-gray-800 px-4 py-3 text-sm placeholder-gray-500 text-gray-200 focus:outline-none focus:ring-2 ${accent.ring}`}
-          placeholder="Enter a URL (e.g. google.com)"
-          bind:value={input}
-          autocomplete="url"
-          inputmode="url"
-          required
-        />
+  <!-- Heading -->
+  <h1 class="relative text-4xl md:text-6xl font-extrabold tracking-tight text-white z-10">
+    <a href="/" on:click={() => location.href = '/'} class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 hover:from-purple-500 hover:to-pink-500 transition-all">
+      SafeSurf
+    </a>
+  </h1>
 
-        
+  <!-- Subheading -->
+  <p class="relative mt-4 text-gray-300 md:text-lg text-center md:text-left max-w-xl z-10 animate-fadeIn">
+    Surf safe with SafeSurf.
+  </p>
+</header>
 
-        <button
-          type="submit"
-          class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-blue-600"
-          disabled={loading}
-          aria-busy={loading}
-        >{loading ? 'Analyzing…' : 'Analyze'}</button>
-      </div>
-      <!-- <p class="mt-2 text-xs text-gray-500">Include http:// or https:// in the URL.</p> -->
-    </form>
+<style>
+/* Blob animation */
+@keyframes blob {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(20px, -10px) scale(1.1); }
+  66% { transform: translate(-15px, 15px) scale(0.95); }
+}
+.animate-blob {
+  animation: blob 8s infinite;
+}
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
 
-    <!-- {#if data}
-      <div class="mt-8 flex items-center justify-between bg-gray-950 border border-gray-800 rounded-lg p-4">
-        <div>
-          <div class="text-[11px] text-gray-400">Analyzed</div>
-          <div class="text-sm text-gray-200 truncate max-w-[60vw]">{data.url}</div>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border ${accent.badge}`}>{verdict || '—'}</span>
-          <span class="text-xs text-gray-400">Score</span>
-          <div class="w-24 h-2 bg-gray-900 rounded overflow-hidden"><div class="h-2 bg-gray-200" style={`width:${Math.min(100, data.result?.final_score ?? 0)}%`}></div></div>
-        </div>
-      </div>
-    {/if} -->
+/* Fade-in animation for subheading */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+  animation: fadeIn 1s ease-out forwards;
+}
+</style>
+
+
+    <form
+  class="relative bg-gray-950 rounded-xl border border-gray-800 p-6 md:p-8 overflow-hidden"
+  on:submit|preventDefault={onSubmit}
+>
+  <!-- Background accent -->
+  <div class="absolute -top-10 -left-10 w-32 h-32 bg-blue-600/20 rounded-full blur-3xl animate-blob z-0"></div>
+  <div class="absolute -bottom-10 -right-10 w-28 h-28 bg-purple-500/20 rounded-full blur-3xl animate-blob animation-delay-3000 z-0"></div>
+
+  <label for="url-input" class="sr-only">URL to analyze</label>
+  <div class="relative flex flex-col md:flex-row gap-3 z-10">
+    <!-- Input -->
+    <input
+      id="url-input"
+      type="text"
+      class={`flex-1 rounded-lg bg-gray-900 border border-gray-800 px-4 py-3 text-sm placeholder-gray-500 text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 ${accent.ring} focus:shadow-lg`}
+      placeholder="Enter a URL (e.g. google.com)"
+      bind:value={input}
+      autocomplete="url"
+      inputmode="url"
+      required
+    />
+
+    <!-- Button -->
+    <button
+  type="submit"
+  class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-blue-600"
+  disabled={loading}
+  aria-busy={loading}
+>
+  {#if loading}
+    <svg class="w-4 h-4 animate-spin text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v4m0 8v4m8-8h-4M4 12H0" />
+    </svg>
+    Analyzing…
+  {:else}
+    Analyze
+  {/if}
+</button>
+
+
+  </div>
+</form>
+
+<style>
+  /* Blob animation */
+  @keyframes blob {
+    0%, 100% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(20px, -10px) scale(1.1); }
+    66% { transform: translate(-15px, 15px) scale(0.95); }
+  }
+  .animate-blob {
+    animation: blob 8s infinite;
+  }
+  .animation-delay-3000 {
+    animation-delay: 3s;
+  }
+</style>
+
+
 
     <div class="mt-8" aria-live="polite">
       <ResultSection {data} {loading} {error} {screenshotData} />

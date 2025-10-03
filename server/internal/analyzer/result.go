@@ -149,13 +149,11 @@ func GenerateResult(resp Response) Result {
 		if resp.Analysis.RedirectionResult.ChainLength > 3 {
 			badReasons = append(badReasons, fmt.Sprintf("Redirect chain is long (%d hops)", resp.Analysis.RedirectionResult.ChainLength))
 			riskScore += 40
-		} else {
-			goodReasons = append(goodReasons, fmt.Sprintf("Redirect chain length is %d (normal)", resp.Analysis.RedirectionResult.ChainLength))
-			trustScore += 5
 		}
 
 		if resp.Analysis.RedirectionResult.HasDomainJump {
 			badReasons = append(badReasons, "Website jumps to a different domain (very risky)")
+			badReasons = append(badReasons, fmt.Sprintf("Final URL was %s", resp.Analysis.RedirectionResult.FinalURL))
 			riskScore += 50
 		}
 	}
@@ -190,9 +188,9 @@ func GenerateResult(resp Response) Result {
 	// Suspicious: moderate risk OR conflicting signals
 	case finalScore < 80:
 		verdict = "Suspicious"
-	// Trustworthy: low risk, high trust
+	// Safe: low risk, high trust
 	case finalScore >= 80 && finalScore <= 100:
-		verdict = "Trustworthy"
+		verdict = "Safe"
 	// Unclear / low trust but also low risk
 	default:
 		verdict = "Unclear"
