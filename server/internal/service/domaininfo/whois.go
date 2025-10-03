@@ -32,7 +32,7 @@ func GetWhoisData(domain string) (*RegistrationData, error) {
 		ExpiryDate:  expiryDate,
 		Nameservers: whoisData.Domain.NameServers,
 		Status:      whoisData.Domain.Status,
-		DNSSEC:      false, // WHOIS doesn't always provide DNSSEC info
+		DNSSEC:      whoisData.Domain.DNSSec,
 		Raw:         raw,
 		Source:      "whois",
 	}
