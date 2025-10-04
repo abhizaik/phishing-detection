@@ -34,7 +34,7 @@ func GetWhoisData(domain string) (*RegistrationData, error) {
 		Status:      whoisData.Domain.Status,
 		DNSSEC:      whoisData.Domain.DNSSec,
 		Raw:         raw,
-		Source:      "whois",
+		Source:      "WHOIS",
 	}
 
 	return registrationData, nil

@@ -29,9 +29,10 @@ type Features struct {
 }
 
 type TLDInfo struct {
-	IsTrusted bool `json:"is_trusted_tld"`
-	IsRisky   bool `json:"is_risky_tld"`
-	IsICANN   bool `json:"is_icann"`
+	TLD       string `json:"tld"`
+	IsTrusted bool   `json:"is_trusted_tld"`
+	IsRisky   bool   `json:"is_risky_tld"`
+	IsICANN   bool   `json:"is_icann"`
 }
 
 type Keywords struct {
@@ -54,7 +55,9 @@ type URLChecks struct {
 type Infrastructure struct {
 	IPAddresses      []string `json:"ip_addresses"`
 	NameserversValid bool     `json:"nameservers_valid"`
+	NSHosts          []string `json:"ns_hosts"`
 	MXRecordsValid   bool     `json:"mx_records_valid"`
+	MXHosts          []string `json:"mx_hosts"`
 }
 
 type HTTPStatus struct {
@@ -88,8 +91,8 @@ type Reasons struct {
 }
 
 type Performance struct {
-	TotalTime string            `json:"total_time"`
-	Timings   map[string]string `json:"timings"`
+	TotalTime string        `json:"total_time"`
+	Timings   []TimingEntry `json:"timings"`
 }
 
 // Internal inputs/outputs for analyzer pipeline
@@ -108,6 +111,7 @@ type Output struct {
 	TLDTrusted bool
 	TLDRisky   bool
 	TLDICANN   bool
+	TLD        string
 
 	URLIsShortener     bool
 	URLUsesIP          bool
@@ -125,6 +129,8 @@ type Output struct {
 	IPs     []string
 	NSValid bool
 	MXValid bool
+	MXHosts []string
+	NSHosts []string
 
 	// analysis
 	RedirectionResult checks.RedirectionResult

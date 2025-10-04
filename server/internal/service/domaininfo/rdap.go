@@ -60,6 +60,33 @@ func fetchRDAP(domain string) (*RegistrationData, error) {
 		return nil, fmt.Errorf("RDAP response parsing failed: %w", err)
 	}
 
+	// Extract registrar (may be nil in some RDAP servers)
+	registrar := ""
+	for _, e := range rd.Entities {
+		for _, role := range e.Roles {
+			if role == "registrar" {
+				// Entities often store registrar name in vCardArray
+				if len(e.VCardArray) >= 2 {
+					if vcardData, ok := e.VCardArray[1].([]any); ok {
+						for _, item := range vcardData {
+							if entry, ok := item.([]any); ok && len(entry) >= 3 {
+								if key, ok := entry[0].(string); ok && key == "fn" { // "fn" = full name
+									if value, ok := entry[3].(string); ok {
+										registrar = value
+										break
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		if registrar != "" {
+			break
+		}
+	}
+
 	var created, updated, expiry time.Time
 	for _, e := range rd.Events {
 		switch e.Action {
@@ -81,6 +108,7 @@ func fetchRDAP(domain string) (*RegistrationData, error) {
 
 	return &RegistrationData{
 		Domain:      rd.LDHName,
+		Registrar:   registrar,
 		CreatedDate: created,
 		UpdatedDate: updated,
 		ExpiryDate:  expiry,
@@ -88,7 +116,7 @@ func fetchRDAP(domain string) (*RegistrationData, error) {
 		Status:      rd.Status,
 		DNSSEC:      rd.SecureDNS.DelegationSigned,
 		Raw:         string(raw),
-		Source:      "rdap",
+		Source:      "RDAP",
 	}, nil
 }
 

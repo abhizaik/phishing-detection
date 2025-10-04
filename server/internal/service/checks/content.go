@@ -38,7 +38,7 @@ func GetPageFormInfo(pageURL string) (*PageFormResult, error) {
 	start := time.Now()
 
 	// HTTP client with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, "GET", pageURL, nil)
 	if err != nil {

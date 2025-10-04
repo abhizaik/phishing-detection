@@ -19,7 +19,7 @@ func TakeScreenshot(url string) string {
 	defer cancel()
 
 	// timeout to avoid hanging
-	ctx, cancel = context.WithTimeout(ctx, 15*time.Second)
+	ctx, cancel = context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	var buf []byte
@@ -27,7 +27,7 @@ func TakeScreenshot(url string) string {
 	// run task
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(url),
-		chromedp.Sleep(2*time.Second), // let page load
+		chromedp.Sleep(1*time.Second), // let page load
 		chromedp.FullScreenshot(&buf, 90),
 	)
 	if err != nil {

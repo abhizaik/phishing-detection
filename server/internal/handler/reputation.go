@@ -26,10 +26,11 @@ func CheckTrustedTLDHandler(c *gin.Context) {
 		return
 	}
 
-	trusted, icann := checks.IsTrustedTld(domain)
+	trusted, icann, tld := checks.IsTrustedTld(domain)
 	c.JSON(http.StatusOK, gin.H{
 		"is_trusted_tld": trusted,
 		"is_icann":       icann,
+		"tld":            tld,
 	})
 }
 
@@ -52,10 +53,11 @@ func CheckRiskyTLDHandler(c *gin.Context) {
 		return
 	}
 
-	risky, icann := checks.IsRiskyTld(domain)
+	risky, icann, tld := checks.IsRiskyTld(domain)
 	c.JSON(http.StatusOK, gin.H{
 		"is_risky_tld": risky,
 		"is_icann":     icann,
+		"tld":          tld,
 	})
 }
 

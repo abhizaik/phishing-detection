@@ -53,6 +53,7 @@ func Analyze(ctx context.Context, rawURL string) (Response, []error) {
 		Features: Features{
 			Rank: out.Rank,
 			TLD: TLDInfo{
+				TLD:       out.TLD,
 				IsTrusted: out.TLDTrusted,
 				IsRisky:   out.TLDRisky,
 				IsICANN:   out.TLDICANN,
@@ -75,7 +76,9 @@ func Analyze(ctx context.Context, rawURL string) (Response, []error) {
 		Infrastructure: Infrastructure{
 			IPAddresses:      out.IPs,
 			NameserversValid: out.NSValid,
+			NSHosts:          out.NSHosts,
 			MXRecordsValid:   out.MXValid,
+			MXHosts:          out.MXHosts,
 		},
 		DomainInfo: out.DomainInfo,
 		Analysis: Analysis{
@@ -90,7 +93,7 @@ func Analyze(ctx context.Context, rawURL string) (Response, []error) {
 		},
 		Performance: Performance{
 			TotalTime: time.Since(start).String(),
-			Timings:   out.Timings,
+			Timings:   ConvertTimings(out.Timings),
 		},
 	}
 

@@ -97,12 +97,13 @@ type tldTask struct{}
 
 func (tldTask) Name() string { return "tld_check" }
 func (tldTask) Run(in *Input, out *Output) error {
-	t, icann := checks.IsTrustedTld(in.Domain)
-	r, _ := checks.IsRiskyTld(in.Domain)
+	t, icann, tld := checks.IsTrustedTld(in.Domain)
+	r, _, _ := checks.IsRiskyTld(in.Domain)
 	out.mu.Lock()
 	out.TLDTrusted = t
 	out.TLDICANN = icann
 	out.TLDRisky = r
+	out.TLD = tld
 	out.mu.Unlock()
 	return nil
 }
@@ -168,11 +169,13 @@ type dnsValidityTask struct{}
 
 func (dnsValidityTask) Name() string { return "dns_validity_check" }
 func (dnsValidityTask) Run(in *Input, out *Output) error {
-	ns, _ := checks.CheckNSValidity(in.Domain)
-	mx, _ := checks.CheckMXValidity(in.Domain)
+	ns, nsHosts, _ := checks.CheckNSValidity(in.Domain)
+	mx, mxHosts, _ := checks.CheckMXValidity(in.Domain)
 	out.mu.Lock()
 	out.NSValid = ns
+	out.NSHosts = nsHosts
 	out.MXValid = mx
+	out.MXHosts = mxHosts
 	out.mu.Unlock()
 	return nil
 }
