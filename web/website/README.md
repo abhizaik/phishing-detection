@@ -15,22 +15,26 @@ A SvelteKit web application that serves as the frontend for the SafeSurf phishin
 The application calls the following backend endpoints (assumed to be running on `http://localhost:8080`):
 
 ### Reputation Checks
+
 - `GET /api/v1/rank` - Global domain rank
 - `GET /api/v1/trusted-tld` - Trusted TLD check
 - `GET /api/v1/risky-tld` - Risky TLD check
 - `GET /api/v1/url-shortener` - URL shortener detection
 
 ### Security Checks
+
 - `GET /api/v1/hsts` - HSTS header check
 - `GET /api/v1/punycode` - Punycode detection
 - `GET /api/v1/status-code` - HTTP status code
 
 ### Structure Checks
+
 - `GET /api/v1/length` - URL length validation
 - `GET /api/v1/depth` - URL depth validation
 - `GET /api/v1/redirects` - Redirect chain analysis
 
 ### Network Checks
+
 - `GET /api/v1/ip/check` - IP-based URL detection
 - `GET /api/v1/ip/resolve` - IP resolution
 - `GET /api/v1/whois` - WHOIS and domain age information
@@ -58,17 +62,19 @@ src/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - Backend API running on `http://localhost:8080`
 
 ### Installation
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Start the development server:
+
    ```bash
    npm run dev
    ```
@@ -94,16 +100,19 @@ npm run build
 ## Features
 
 ### URL Validation
+
 - Client-side URL validation before API calls
 - Automatic protocol addition (https://) if missing
 - Clear error messages for invalid URLs
 
 ### Loading States
+
 - Individual loading spinners for each check
 - Progress indication during API calls
 - Graceful error handling for failed requests
 
 ### Result Display
+
 - Color-coded results (green for safe, red for suspicious, yellow for warnings)
 - Detailed WHOIS information including domain age
 - Error messages for failed API calls

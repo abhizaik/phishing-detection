@@ -112,4 +112,4 @@ export interface CheckStatus {
   loading: boolean;
   error?: string;
   completed: boolean;
-} 
+}

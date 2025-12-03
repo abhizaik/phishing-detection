@@ -12,7 +12,7 @@ import type {
   UrlShortenerResponse,
   StatusCodeResponse,
   WhoisResponse,
-  ApiResponse
+  ApiResponse,
 } from './types';
 import { env } from '$env/dynamic/public';
 
@@ -24,19 +24,19 @@ async function makeRequest<T>(endpoint: string, url: string): Promise<ApiRespons
     const formattedUrl = url.trim();
     const encodedUrl = encodeURIComponent(formattedUrl);
     const fullUrl = `${PUBLIC_BASE_URL}${endpoint}?url=${encodedUrl}`;
-    
+
     console.log(`Making request to: ${fullUrl}`);
-    
+
     const response = await fetch(fullUrl);
-    
+
     console.log(`Response status: ${response.status}`);
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
       console.error(`API Error:`, errorData);
       return { error: errorData.error || `HTTP ${response.status}` };
     }
-    
+
     const data = await response.json();
     console.log(`API Success for ${endpoint}:`, data);
     return { data };
@@ -103,5 +103,5 @@ export const api = {
 
   async getWhois(url: string): Promise<ApiResponse<WhoisResponse>> {
     return makeRequest<WhoisResponse>('/whois', url);
-  }
-}; 
+  },
+};
