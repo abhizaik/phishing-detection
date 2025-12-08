@@ -362,7 +362,10 @@
                       text="A rough estimate of the website’s global popularity, lower numbers mean more visitors. Derived from traffic and engagement data."
                     />
                   </div>
-                  <span class="font-medium text-white">{data.features.rank}</span>
+
+                  <span class="font-medium text-white">
+                    {data.features.rank === 0 ? "Unranked" : data.features.rank}
+                  </span>
                 </div>
               {/if}
 
