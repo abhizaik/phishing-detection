@@ -48,7 +48,7 @@ prod-logs:
 
 ## Run Go backend locally
 run-backend:
-	air
+	cd server && air
 
 ## Run Svelte frontend locally (dev server)
 run-frontend:
