@@ -80,7 +80,7 @@
       <div class="flex flex-col">
         <h2 class="text-2xl font-semibold text-white" id="analysis-summary">Analysis Summary</h2>
         <p class="text-gray-400 text-sm mt-1">
-          Check the verdict, score, and flags for {data?.domain}
+          Here’s the security profile for {data?.domain}
         </p>
       </div>
 
@@ -331,9 +331,9 @@
     <!-- Advanced Panel -->
     <div
       id="advanced-panel"
-      class="transition-all duration-500 ease-in-out overflow-hidden {showAdvanced
-        ? 'max-h-[5000px] opacity-100 mt-4'
-        : 'max-h-0 opacity-0'}"
+      class="transition-all duration-500 ease-in-out {showAdvanced
+        ? 'max-h-[5000px] opacity-100 mt-4 overflow-visible'
+        : 'max-h-0 opacity-0 overflow-hidden'}"
     >
       <div class="rounded-xl border border-gray-800 bg-gray-950 p-6 space-y-6 shadow-md">
         <!-- Features -->
@@ -349,152 +349,192 @@
               >
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-200">
+            <div
+              class="space-y-0 divide-y divide-gray-800 text-sm text-gray-200 max-w-4xl w-full mx-auto"
+            >
               {#if data.features.rank !== undefined}
-                <div>
-                  <span class="text-gray-400">Website's Propularity Rank:</span>
-                  <TooltipIcon
-                    text="A rough estimate of the website’s global popularity, lower numbers mean more visitors. Derived from traffic and engagement data."
-                  />
-
-                  <span class="font-medium text-white ml-1">{data.features.rank}</span>
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Global Traffic Rank:</span>
+                    <TooltipIcon
+                      text="A rough estimate of the website’s global popularity, lower numbers mean more visitors. Derived from traffic and engagement data."
+                    />
+                  </div>
+                  <span class="font-medium text-white">{data.features.rank}</span>
                 </div>
               {/if}
 
               {#if data.features.tld}
-                <div>
-                  <span class="text-gray-400">Domain Ending (TLD):</span>
-                  <TooltipIcon
-                    text="The last part of a domain name (like .com, .org, .io). It can hint at the site’s trust level or purpose."
-                  />
-
-                  <span class="font-medium text-white ml-1">.{data.features.tld.tld}</span>
-
-                  <div class="flex flex-wrap gap-1 mt-2">
-                    <span class="px-2 py-0.5 rounded text-[11px] bg-gray-800">
-                      Official / Trusted:
-                      <TooltipIcon
-                        text="Indicates whether this domain ending (TLD) is widely recognized and commonly used by highly trusted entities like govenment and other institutions."
-                      />
-                      {#if data.features.tld.is_trusted_tld}✅ Yes{:else}❌ No{/if}
-                    </span>
-                    <span class="px-2 py-0.5 rounded text-[11px] bg-gray-800">
-                      Risky:
-                      <TooltipIcon
-                        text="Some TLDs are frequently abused by scammers or malicious sites. 'Yes' suggests caution."
-                      />
-                      {#if data.features.tld.is_risky_tld}❌ Yes{:else}✅ No{/if}
-                    </span>
-                    <span class="px-2 py-0.5 rounded text-[11px] bg-gray-800">
-                      Recognized by ICANN:
-                      <TooltipIcon
-                        text="ICANN oversees global domain names. Recognition means this TLD is officially managed and monitored."
-                      />
-                      {#if data.features.tld.is_icann}✅ Yes{:else}❌ No{/if}
-                    </span>
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Domain Ending (TLD):</span>
+                    <TooltipIcon
+                      text="The last part of a domain name (like .com, .org, .io). It can hint at the site’s trust level or purpose."
+                    />
                   </div>
+                  <span class="font-medium text-white">.{data.features.tld.tld}</span>
+                </div>
+
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>High Trust Domain Ending:</span>
+                    <TooltipIcon
+                      text="Indicates whether this domain ending (TLD) is widely recognized and commonly used by highly trusted entities like government and other institutions."
+                    />
+                  </div>
+                  {#if data.features.tld.is_trusted_tld}
+                    <span class="text-green-400 font-medium flex items-center gap-1">✅ Yes</span>
+                  {:else}
+                    <span class="text-red-400 font-medium flex items-center gap-1">❌ No</span>
+                  {/if}
+                </div>
+
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Is Risky TLD:</span>
+                    <TooltipIcon
+                      text="Some TLDs are frequently abused by scammers or malicious sites. 'Yes' suggests caution."
+                    />
+                  </div>
+                  {#if data.features.tld.is_risky_tld}
+                    <span class="text-red-400 font-medium flex items-center gap-1">❌ Yes</span>
+                  {:else}
+                    <span class="text-green-400 font-medium flex items-center gap-1">✅ No</span>
+                  {/if}
+                </div>
+
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>TLD Recognized by ICANN:</span>
+                    <TooltipIcon
+                      text="ICANN oversees global domain names. Recognition means this TLD is officially managed and monitored."
+                    />
+                  </div>
+                  {#if data.features.tld.is_icann}
+                    <span class="text-green-400 font-medium flex items-center gap-1">✅ Yes</span>
+                  {:else}
+                    <span class="text-red-400 font-medium flex items-center gap-1">❌ No</span>
+                  {/if}
                 </div>
               {/if}
 
               {#if data.features.url}
-                <div>
-                  <span class="text-gray-400">Uses Link Shortener:</span>
-                  <TooltipIcon
-                    text="Shows if the URL uses a shortening service (like bit.ly). Shortened links can hide a site’s real destination."
-                  />
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Uses Link Shortener:</span>
+                    <TooltipIcon
+                      text="Shows if the URL uses a shortening service (like bit.ly). Shortened links can hide a site’s real destination."
+                    />
+                  </div>
                   {#if data.features.url.url_shortener}
-                    <span class="text-red-400 font-medium ml-1 flex items-center gap-1">❌ Yes</span
-                    >
+                    <span class="text-red-400 font-medium flex items-center gap-1">❌ Yes</span>
                   {:else}
-                    <span class="text-green-400 font-medium ml-1 flex items-center gap-1"
-                      >✅ No</span
-                    >
+                    <span class="text-green-400 font-medium flex items-center gap-1">✅ No</span>
                   {/if}
                 </div>
 
-                <div>
-                  <span class="text-gray-400">Uses Direct IP Address:</span>
-                  <TooltipIcon
-                    text="Some malicious sites use IP addresses instead of domain names to avoid detection. Legitimate websites rarely do this."
-                  />
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Uses Direct IP Address:</span>
+                    <TooltipIcon
+                      text="Some malicious sites use IP addresses instead of domain names to avoid detection. Legitimate websites rarely do this."
+                    />
+                  </div>
                   {#if data.features.url.uses_ip}
-                    <span class="text-red-400 font-medium ml-1 flex items-center gap-1">❌ Yes</span
-                    >
+                    <span class="text-red-400 font-medium flex items-center gap-1">❌ Yes</span>
                   {:else}
-                    <span class="text-green-400 font-medium ml-1 flex items-center gap-1"
-                      >✅ No</span
-                    >
+                    <span class="text-green-400 font-medium flex items-center gap-1">✅ No</span>
                   {/if}
                 </div>
 
-                <div>
-                  <span class="text-gray-400">Contains Punycode Characters:</span>
-                  <TooltipIcon
-                    text="Punycode allows special or non-Latin characters in domains (like xn--example). Scammers sometimes exploit this for lookalike attacks."
-                  />
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Contains Punycode Characters:</span>
+                    <TooltipIcon
+                      text="Punycode allows special or non-Latin characters in domains (like xn--example). Scammers sometimes exploit this for lookalike attacks."
+                    />
+                  </div>
                   {#if data.features.url.contains_punycode}
-                    <span class="text-red-400 font-medium ml-1 flex items-center gap-1">❌ Yes</span
-                    >
+                    <span class="text-red-400 font-medium flex items-center gap-1">❌ Yes</span>
                   {:else}
-                    <span class="text-green-400 font-medium ml-1 flex items-center gap-1"
-                      >✅ No</span
-                    >
+                    <span class="text-green-400 font-medium flex items-center gap-1">✅ No</span>
                   {/if}
                 </div>
 
-                <div>
-                  <span class="text-gray-400">URL Too Long:</span>
-                  <TooltipIcon
-                    text="Very long URLs can be used to obscure malicious content or trick users into trusting a fake site."
-                  />
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>URL Too Long:</span>
+                    <TooltipIcon
+                      text="Very long URLs can be used to obscure malicious content or trick users into trusting a fake site."
+                    />
+                  </div>
                   {#if data.features.url.too_long}
-                    <span class="text-red-400 font-medium ml-1 flex items-center gap-1">❌ Yes</span
-                    >
+                    <span class="text-red-400 font-medium flex items-center gap-1">❌ Yes</span>
                   {:else}
-                    <span class="text-green-400 font-medium ml-1 flex items-center gap-1"
-                      >✅ No</span
-                    >
+                    <span class="text-green-400 font-medium flex items-center gap-1">✅ No</span>
                   {/if}
                 </div>
 
-                <div>
-                  <span class="text-gray-400">URL Too Deep (Many Slashes):</span>
-                  <TooltipIcon
-                    text="A URL with many nested paths may indicate redirections or hidden content, often seen in phishing attempts."
-                  />
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>URL Too Deep (Many Slashes):</span>
+                    <TooltipIcon
+                      text="A URL with many nested paths may indicate redirections or hidden content, often seen in phishing attempts."
+                    />
+                  </div>
                   {#if data.features.url.too_deep}
-                    <span class="text-red-400 font-medium ml-1 flex items-center gap-1">❌ Yes</span
-                    >
+                    <span class="text-red-400 font-medium flex items-center gap-1">❌ Yes</span>
                   {:else}
-                    <span class="text-green-400 font-medium ml-1 flex items-center gap-1"
-                      >✅ No</span
-                    >
+                    <span class="text-green-400 font-medium flex items-center gap-1">✅ No</span>
                   {/if}
                 </div>
 
-                <div>
-                  <span class="text-gray-400">Has Look-Alike Letters (Homoglyph):</span>
-                  <TooltipIcon
-                    text="Detects if the domain name includes characters that look like others (e.g., 'go0gle.com'). Often used for impersonation."
-                  />
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Has Look-Alike Letters (Homoglyph):</span>
+                    <TooltipIcon
+                      text="Detects if the domain name includes characters that look like others (e.g., 'go0gle.com'). Often used for impersonation."
+                    />
+                  </div>
                   {#if data.features.url.has_homoglyph}
-                    <span class="text-red-400 font-medium ml-1 flex items-center gap-1">❌ Yes</span
-                    >
+                    <span class="text-red-400 font-medium flex items-center gap-1">❌ Yes</span>
                   {:else}
-                    <span class="text-green-400 font-medium ml-1 flex items-center gap-1"
-                      >✅ No</span
-                    >
+                    <span class="text-green-400 font-medium flex items-center gap-1">✅ No</span>
                   {/if}
                 </div>
 
-                <div>
-                  <span class="text-gray-400">Subdomain Count:</span>
-                  <TooltipIcon
-                    text="Shows how many subdomains (like shop.example.com) are used. Too many can hint at suspicious or temporary setups."
-                  />
-                  <span class="font-medium text-white ml-1"
-                    >{data.features.url.subdomain_count}</span
-                  >
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Subdomain Count:</span>
+                    <TooltipIcon
+                      text="Shows how many subdomains (like shop.example.com) are used. Too many can hint at suspicious or temporary setups."
+                    />
+                  </div>
+                  <span class="font-medium text-white">{data.features.url.subdomain_count}</span>
                 </div>
               {/if}
             </div>
@@ -514,15 +554,23 @@
               >
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-200">
+            <div
+              class="space-y-0 divide-y divide-gray-800 text-sm text-gray-200 max-w-4xl w-full mx-auto"
+            >
               {#if data.infrastructure.ip_addresses?.length}
-                <div class="md:col-span-2">
-                  <div class="text-sm text-gray-400 mb-1">
-                    Server IP Address{data.infrastructure.ip_addresses.length > 1 ? "es" : ""}:
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span
+                      >Server IP Address{data.infrastructure.ip_addresses.length > 1
+                        ? "es"
+                        : ""}:</span
+                    >
+                    <TooltipIcon
+                      text="The actual network address where the website is hosted. Each IP points to a specific physical or cloud server."
+                    />
                   </div>
-                  <TooltipIcon
-                    text="The actual network address where the website is hosted. Each IP points to a specific physical or cloud server."
-                  />
                   <div class="flex flex-wrap gap-2">
                     {#each data.infrastructure.ip_addresses as ip}
                       <span class="px-2 py-1 bg-gray-800 text-white rounded text-xs">{ip}</span>
@@ -531,11 +579,15 @@
                 </div>
               {/if}
 
-              <div class="flex items-center gap-2">
-                <span class="text-gray-400">Nameserver (NS) Records:</span>
-                <TooltipIcon
-                  text="Nameservers control where your domain points. They act like the internet’s ‘address book’, linking your domain name to the right hosting provider."
-                />
+              <div
+                class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+              >
+                <div class="flex items-center gap-1 text-gray-400">
+                  <span>DNS Configuration:</span>
+                  <TooltipIcon
+                    text="Nameservers control where your domain points. They act like the internet’s ‘address book’, linking your domain name to the right hosting provider."
+                  />
+                </div>
                 {#if data.infrastructure.nameservers_valid}
                   <span class="text-green-400 font-medium flex items-center gap-1">✅ Detected</span
                   >
@@ -547,9 +599,11 @@
               </div>
 
               {#if data.infrastructure.ns_hosts?.length > 0}
-                <div class="md:col-span-2">
-                  <div class="text-sm text-gray-400 mb-1">
-                    Nameserver Hosts:
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Nameserver Hosts:</span>
                     <TooltipIcon
                       text="The servers responsible for managing your domain’s DNS settings. These typically belong to your registrar or hosting provider."
                     />
@@ -563,11 +617,15 @@
                 </div>
               {/if}
 
-              <div class="flex items-center gap-2">
-                <span class="text-gray-400">Mail Exchange (MX) Records:</span>
-                <TooltipIcon
-                  text="MX records define where emails for this domain are delivered, essential for sending and receiving mail securely."
-                />
+              <div
+                class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+              >
+                <div class="flex items-center gap-1 text-gray-400">
+                  <span>Email Server Records:</span>
+                  <TooltipIcon
+                    text="MX records define where emails for this domain are delivered, essential for sending and receiving mail securely."
+                  />
+                </div>
                 {#if data.infrastructure.mx_records_valid}
                   <span class="text-green-400 font-medium flex items-center gap-1">✅ Detected</span
                   >
@@ -579,9 +637,11 @@
               </div>
 
               {#if data.infrastructure.mx_hosts?.length > 0}
-                <div class="md:col-span-2">
-                  <div class="text-sm text-gray-400 mb-1">
-                    MX Hosts:
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>MX Hosts:</span>
                     <TooltipIcon
                       text="The mail servers responsible for handling your domain’s email traffic."
                     />
@@ -611,92 +671,133 @@
               >
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-gray-200">
-              <div>
-                <span class="text-gray-400">Domain:</span>
-                <TooltipIcon
-                  text="The registered name of the website — what users type in the browser to visit it."
-                />
-                <span class="font-medium text-white ml-1">{data.domain_info.domain}</span>
+            <div
+              class="space-y-0 divide-y divide-gray-800 text-sm text-gray-200 max-w-4xl w-full mx-auto"
+            >
+              <div
+                class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+              >
+                <div class="flex items-center gap-1 text-gray-400">
+                  <span>Domain:</span>
+                  <TooltipIcon
+                    text="The registered name of the website — what users type in the browser to visit it."
+                  />
+                </div>
+                <span class="font-medium text-white">{data.domain_info.domain}</span>
               </div>
 
-              <div>
-                <span class="text-gray-400">Registrar:</span>
-                <TooltipIcon
-                  text="The company or organization that manages the registration of this domain (e.g., GoDaddy, Namecheap, Google Domains)."
-                />
-                <span class="font-medium text-white ml-1">{data.domain_info.registrar || "-"}</span>
+              <div
+                class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+              >
+                <div class="flex items-center gap-1 text-gray-400">
+                  <span>Registrar:</span>
+                  <TooltipIcon
+                    text="The company or organization that manages the registration of this domain (e.g., GoDaddy, Namecheap, Google Domains)."
+                  />
+                </div>
+                <span class="font-medium text-white">{data.domain_info.registrar || "-"}</span>
               </div>
 
-              <div>
-                <span class="text-gray-400">Domain Age:</span>
-                <TooltipIcon
-                  text="How long ago the domain was first registered. Older domains often suggest more established or legitimate websites."
-                />
-                <span class="font-medium text-white ml-1">{data.domain_info.age_human}</span>
+              <div
+                class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+              >
+                <div class="flex items-center gap-1 text-gray-400">
+                  <span>Domain Age:</span>
+                  <TooltipIcon
+                    text="How long ago the domain was first registered. Older domains often suggest more established or legitimate websites."
+                  />
+                </div>
+                <span class="font-medium text-white">{data.domain_info.age_human}</span>
               </div>
 
-              <div class="flex items-center gap-1">
-                <span class="text-gray-400">DNSSEC Enabled:</span>
-                <TooltipIcon
-                  text="A security feature that helps protect against DNS tampering and redirection attacks by digitally signing DNS data."
-                />
+              <div
+                class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+              >
+                <div class="flex items-center gap-1 text-gray-400">
+                  <span>DNSSEC Enabled:</span>
+                  <TooltipIcon
+                    text="A security feature that helps protect against DNS tampering and redirection attacks by digitally signing DNS data."
+                  />
+                </div>
                 {#if data.domain_info.dnssec}
-                  <span class="text-green-400 font-medium ml-1 flex items-center gap-1">✅ Yes</span
-                  >
+                  <span class="text-green-400 font-medium flex items-center gap-1">✅ Yes</span>
                 {:else}
-                  <span class="text-red-400 font-medium ml-1 flex items-center gap-1">❌ No</span>
+                  <span class="text-red-400 font-medium flex items-center gap-1">❌ No</span>
                 {/if}
               </div>
 
-              <div>
-                <span class="text-gray-400">Created:</span>
-                <TooltipIcon
-                  text="The date when this domain was first registered and became active on the internet."
-                />
-                <span class="font-medium text-white ml-1">{data.domain_info.created}</span>
+              <div
+                class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+              >
+                <div class="flex items-center gap-1 text-gray-400">
+                  <span>Created:</span>
+                  <TooltipIcon
+                    text="The date when this domain was first registered and became active on the internet."
+                  />
+                </div>
+                <span class="font-medium text-white">{data.domain_info.created}</span>
               </div>
 
-              <div>
-                <span class="text-gray-400">Updated:</span>
-                <TooltipIcon
-                  text="The last date the domain registration information was modified (e.g., contact change or nameserver update)."
-                />
-                <span class="font-medium text-white ml-1">{data.domain_info.updated}</span>
+              <div
+                class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+              >
+                <div class="flex items-center gap-1 text-gray-400">
+                  <span>Updated:</span>
+                  <TooltipIcon
+                    text="The last date the domain registration information was modified (e.g., contact change or nameserver update)."
+                  />
+                </div>
+                <span class="font-medium text-white">{data.domain_info.updated}</span>
               </div>
 
-              <div>
-                <span class="text-gray-400">Expiry:</span>
-                <TooltipIcon
-                  text="The date when this domain’s registration will expire unless renewed by the owner."
-                />
-                <span class="font-medium text-white ml-1">{data.domain_info.expiry}</span>
+              <div
+                class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+              >
+                <div class="flex items-center gap-1 text-gray-400">
+                  <span>Expiry:</span>
+                  <TooltipIcon
+                    text="The date when this domain’s registration will expire unless renewed by the owner."
+                  />
+                </div>
+                <span class="font-medium text-white">{data.domain_info.expiry}</span>
               </div>
+
+              {#if data.domain_info.nameservers?.length}
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Nameservers:</span>
+                    <TooltipIcon
+                      text="Servers responsible for directing internet traffic to the correct web host. They link your domain to its hosting service."
+                    />
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    {#each data.domain_info.nameservers as ns}
+                      <span class="px-2 py-1 bg-gray-800 text-white rounded text-xs">{ns}</span>
+                    {/each}
+                  </div>
+                </div>
+              {/if}
+
+              {#if data.domain_info.status?.length}
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Status:</span>
+                    <TooltipIcon
+                      text="Domain lifecycle or control states — such as 'active', 'clientTransferProhibited', or 'pendingDelete'. They indicate administrative or operational restrictions."
+                    />
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    {#each data.domain_info.status as st}
+                      <span class="px-2 py-1 bg-gray-800 text-white rounded text-xs">{st}</span>
+                    {/each}
+                  </div>
+                </div>
+              {/if}
             </div>
-
-            {#if data.domain_info.nameservers?.length}
-              <div class="text-sm text-gray-400 mt-3">Nameservers:</div>
-              <TooltipIcon
-                text="Servers responsible for directing internet traffic to the correct web host. They link your domain to its hosting service."
-              />
-              <div class="flex flex-wrap gap-2 mt-1">
-                {#each data.domain_info.nameservers as ns}
-                  <span class="px-2 py-1 bg-gray-800 text-white rounded text-xs">{ns}</span>
-                {/each}
-              </div>
-            {/if}
-
-            {#if data.domain_info.status?.length}
-              <div class="text-sm text-gray-400 mt-3">Status:</div>
-              <TooltipIcon
-                text="Domain lifecycle or control states — such as 'active', 'clientTransferProhibited', or 'pendingDelete'. They indicate administrative or operational restrictions."
-              />
-              <div class="flex flex-wrap gap-2 mt-1">
-                {#each data.domain_info.status as st}
-                  <span class="px-2 py-1 bg-gray-800 text-white rounded text-xs">{st}</span>
-                {/each}
-              </div>
-            {/if}
           </section>
         {/if}
 
@@ -713,13 +814,19 @@
               >
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-200">
+            <div
+              class="space-y-0 divide-y divide-gray-800 text-sm text-gray-200 max-w-4xl w-full mx-auto"
+            >
               {#if data.analysis.redirection_result}
-                <div class="flex items-center gap-1">
-                  <span class="text-gray-400">Redirected:</span>
-                  <TooltipIcon
-                    text="Indicates whether visiting given URL automatically forwards you to another URL."
-                  />
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Redirected:</span>
+                    <TooltipIcon
+                      text="Indicates whether visiting given URL automatically forwards you to another URL."
+                    />
+                  </div>
                   {#if data.analysis.redirection_result.is_redirected}
                     <span class="text-gray-400 font-medium flex items-center gap-1"> Yes</span>
                   {:else}
@@ -728,31 +835,43 @@
                 </div>
 
                 {#if data.analysis.redirection_result.final_url}
-                  <div class="md:col-span-2">
-                    <span class="text-gray-400">Final URL Domain:</span>
-                    <TooltipIcon
-                      text="The domain where the visitor finally lands after any redirects. Useful to detect domain changes or phishing redirects."
-                    />
-                    <span class="font-medium text-white break-all ml-1"
+                  <div
+                    class="flex flex-col md:grid md:grid-cols-[350px,1fr] gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                  >
+                    <div class="flex items-center gap-1 text-gray-400">
+                      <span>Final URL Domain:</span>
+                      <TooltipIcon
+                        text="The domain where the visitor finally lands after any redirects. Useful to detect domain changes or phishing redirects."
+                      />
+                    </div>
+                    <span class="font-medium text-white break-all"
                       >{data.analysis.redirection_result.final_url_domain}</span
                     >
                   </div>
-                  <div class="md:col-span-2">
-                    <span class="text-gray-400">Final URL:</span>
-                    <TooltipIcon
-                      text="The complete URL where the user ends up after all redirections."
-                    />
-                    <span class="font-medium text-white break-all ml-1"
+                  <div
+                    class="flex flex-col md:grid md:grid-cols-[350px,1fr] gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                  >
+                    <div class="flex items-center gap-1 text-gray-400">
+                      <span>Final URL:</span>
+                      <TooltipIcon
+                        text="The complete URL where the user ends up after all redirections."
+                      />
+                    </div>
+                    <span class="font-medium text-white break-all"
                       >{data.analysis.redirection_result.final_url}</span
                     >
                   </div>
                 {/if}
 
-                <div class="flex items-center gap-1">
-                  <span class="text-gray-400">Domain Jumped to Another Domain:</span>
-                  <TooltipIcon
-                    text="Checks if the website redirects to a completely different domain, which can indicate phishing or tracking."
-                  />
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Domain Jumped to Another Domain:</span>
+                    <TooltipIcon
+                      text="Checks if the website redirects to a completely different domain, which can indicate phishing or tracking."
+                    />
+                  </div>
                   {#if data.analysis.redirection_result.has_domain_jump}
                     <span class="text-red-400 font-medium flex items-center gap-1">❌ Yes</span>
                   {:else}
@@ -760,22 +879,30 @@
                   {/if}
                 </div>
 
-                <div>
-                  <span class="text-gray-400">Redirection Chain Length:</span>
-                  <TooltipIcon
-                    text="Shows how many redirect steps the website takes before reaching the final destination."
-                  />
-                  <span class="font-medium text-white ml-1"
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Redirection Chain Length:</span>
+                    <TooltipIcon
+                      text="Shows how many redirect steps the website takes before reaching the final destination."
+                    />
+                  </div>
+                  <span class="font-medium text-white"
                     >{data.analysis.redirection_result.chain_length}</span
                   >
                 </div>
 
                 {#if data.analysis.redirection_result.chain?.length}
-                  <div class="md:col-span-2">
-                    <div class="text-sm text-gray-400 mb-1">Redirection Chain:</div>
-                    <TooltipIcon
-                      text="A step-by-step list of all URLs in the redirection path. Warning icons highlight jumps to unexpected domains."
-                    />
+                  <div
+                    class="flex flex-col md:grid md:grid-cols-[350px,1fr] gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                  >
+                    <div class="flex items-center gap-1 text-gray-400">
+                      <span>Redirection Chain:</span>
+                      <TooltipIcon
+                        text="A step-by-step list of all URLs in the redirection path. Warning icons highlight jumps to unexpected domains."
+                      />
+                    </div>
                     <ul class="text-sm text-gray-100 list-none">
                       {#each data.analysis.redirection_result.chain as url, index}
                         <li class="break-all flex items-center gap-2 mb-1">
@@ -792,21 +919,29 @@
               {/if}
 
               {#if data.analysis.http_status}
-                <div>
-                  <span class="text-gray-400">HTTP Status Code:</span>
-                  <TooltipIcon
-                    text="The server response code returned when accessing the URL (e.g., 200 = OK, 404 = Not Found)."
-                  />
-                  <span class="font-medium text-white ml-1"
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>HTTP Status Code:</span>
+                    <TooltipIcon
+                      text="The server response code returned when accessing the URL (e.g., 200 = OK, 404 = Not Found)."
+                    />
+                  </div>
+                  <span class="font-medium text-white"
                     >{data.analysis.http_status.code} {data.analysis.http_status.text}</span
                   >
                 </div>
 
-                <div class="flex items-center gap-1">
-                  <span class="text-gray-400">Redirection Status Code (3xx):</span>
-                  <TooltipIcon
-                    text="Indicates whether the HTTP status is a redirection (3xx) code, which automatically sends visitors to another URL."
-                  />
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Redirection Status Code (3xx):</span>
+                    <TooltipIcon
+                      text="Indicates whether the HTTP status is a redirection (3xx) code, which automatically sends visitors to another URL."
+                    />
+                  </div>
                   {#if data.analysis.http_status.is_redirect}
                     <span class="text-red-400 font-medium flex items-center gap-1">❌ Yes</span>
                   {:else}
@@ -816,11 +951,15 @@
               {/if}
 
               {#if data.analysis.is_hsts_supported !== undefined}
-                <div class="flex items-center gap-1">
-                  <span class="text-gray-400">HSTS Supported (HTTPS Only):</span>
-                  <TooltipIcon
-                    text="Shows if the website enforces HTTPS connections automatically to improve security and prevent attacks."
-                  />
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>HSTS Supported (HTTPS Only):</span>
+                    <TooltipIcon
+                      text="Shows if the website enforces HTTPS connections automatically to improve security and prevent attacks."
+                    />
+                  </div>
                   {#if data.analysis.is_hsts_supported}
                     <span class="text-green-400 font-medium flex items-center gap-1">✅ Yes</span>
                   {:else}
@@ -845,20 +984,29 @@
               >
             </div>
 
-            <div class="text-sm text-gray-200 mb-2">
-              Total time: <span class="font-medium text-white">{data.performance.total_time}</span>
-            </div>
+            <div
+              class="space-y-0 divide-y divide-gray-800 text-sm text-gray-200 max-w-4xl w-full mx-auto"
+            >
+              <div
+                class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+              >
+                <span class="text-gray-400">Total time:</span>
+                <span class="font-medium text-white">{data.performance.total_time}</span>
+              </div>
 
-            {#if data.performance.timings && data.performance.timings.length > 0}
-              <ul class="text-sm text-gray-100 grid grid-cols-1 md:grid-cols-2 gap-2">
-                {#each data.performance.timings as timing}
-                  <li class="flex justify-between gap-2 border-b border-gray-800 pb-1">
-                    <span class="text-gray-400">{timing.task}</span>
-                    <span>{timing.time}</span>
-                  </li>
-                {/each}
-              </ul>
-            {/if}
+              {#if data.performance.timings && data.performance.timings.length > 0}
+                <ul class="text-sm text-gray-100 space-y-0 divide-y divide-gray-800">
+                  {#each data.performance.timings as timing}
+                    <li
+                      class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                    >
+                      <span class="text-gray-400">{timing.task}</span>
+                      <span>{timing.time}</span>
+                    </li>
+                  {/each}
+                </ul>
+              {/if}
+            </div>
           </section>
         {/if}
 
