@@ -1,10 +1,10 @@
 <script lang="ts">
+  import { replaceState } from "$app/navigation";
   import { onMount } from "svelte";
   import { api } from "../lib/api";
   import ResultSection from "../lib/components/ResultSection.svelte";
   import type { AnalyzeResult, ScreenshotResponse } from "../lib/types";
-  import { isValidUrl, formatUrl } from "../lib/utils";
-  import { replaceState } from "$app/navigation";
+  import { formatUrl, isValidUrl } from "../lib/utils";
 
   let input = "";
   let loading = false;
@@ -162,7 +162,7 @@
       <p
         class="relative mt-4 text-gray-300 md:text-lg text-center md:text-left max-w-xl z-10 animate-fadeIn"
       >
-        Surf safe with SafeSurf.
+        Check if a link is safe.
       </p>
     </header>
 
@@ -261,9 +261,9 @@
                 d="M12 4v4m0 8v4m8-8h-4M4 12H0"
               />
             </svg>
-            Analyzing…
+            Scanning ..
           {:else}
-            Analyze
+            Scan Now
           {/if}
         </button>
       </div>

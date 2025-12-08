@@ -18,7 +18,7 @@
            opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0
            bg-gray-800 text-gray-100 text-xs px-3 py-1.5 rounded-lg shadow-lg
            border border-gray-700 transition-all duration-200 ease-out
-           pointer-events-none z-50 whitespace-normal"
+           pointer-events-none z-[9999] whitespace-normal"
   >
     {text}
     <div

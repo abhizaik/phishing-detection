@@ -13,154 +13,159 @@ func GenerateResult(resp Response) Result {
 	trustScore := 0
 	riskScore := 0
 
-	// Rank
+
+	// --- 1. Popularity & Rank ---
 	if resp.Features.Rank == 0 {
-		badReasons = append(badReasons, "This website is hardly known, so it may not be very trustworthy.")
+		// Changed from "Hardly known" to "Unranked"
+		badReasons = append(badReasons, "Very low traffic volume.")
 		riskScore += 20
 	} else if resp.Features.Rank > 0 && resp.Features.Rank <= 10000 {
-		goodReasons = append(goodReasons, fmt.Sprintf("This website is very popular worldwide, which is a good sign (#%d globally).", resp.Features.Rank))
+		goodReasons = append(goodReasons, fmt.Sprintf("Global Giant: Ranked #%d worldwide.", resp.Features.Rank))
 		trustScore += 90
 	} else if resp.Features.Rank > 50000 {
-		goodReasons = append(goodReasons, fmt.Sprintf("This website has moderate popularity (#%d), generally considered okay.", resp.Features.Rank))
+		goodReasons = append(goodReasons, fmt.Sprintf("Established website with moderate popularity (#%d).", resp.Features.Rank))
 		trustScore += 50
 	} else {
-		neutralReasons = append(neutralReasons, fmt.Sprintf("This website is not very popular (#%d), which is neither good nor bad.", resp.Features.Rank))
+		goodReasons = append(goodReasons, fmt.Sprintf("Niche website with standard traffic volume (#%d).", resp.Features.Rank))
+		trustScore += 20
 	}
 
-	// TLD
+	// --- 2. TLD (Top Level Domain) ---
 	if resp.Features.TLD.IsRisky {
-		badReasons = append(badReasons, "The website uses a domain type that is sometimes used by untrustworthy sites.")
+		badReasons = append(badReasons, "High-risk domain extension detected (often associated with spam).")
 		riskScore += 20
 	}
 
 	if resp.Features.TLD.IsTrusted {
-		goodReasons = append(goodReasons, "The website uses a trusted domain type, verified by official authorities.")
+		goodReasons = append(goodReasons, "High-trust official domain extension (Gov/Edu).")
 		trustScore += 100
 	} else if resp.Features.TLD.IsICANN && !resp.Features.TLD.IsRisky {
-		neutralReasons = append(neutralReasons, "The website uses a standard domain type, which is normal.")
+		// Keep it simple
+		neutralReasons = append(neutralReasons, "Standard, officially recognized domain extension.")
 	}
 
 	if !resp.Features.TLD.IsICANN {
-		badReasons = append(badReasons, "The domain type is uncommon and not officially regulated, which may be risky.")
+		badReasons = append(badReasons, "Unregulated or non-standard domain extension.")
 		riskScore += 30
 	}
 
-	// HSTS
+	// --- 3. Security Protocols ---
 	if resp.Analysis.SupportsHSTS {
-		goodReasons = append(goodReasons, "The website uses extra security to protect your connection (HSTS).")
+		goodReasons = append(goodReasons, "Enforces strict HTTPS security (HSTS Enabled).")
 		trustScore += 20
 	}
 
-	// URL Shortener
+	// --- 4. URL Structure / Obfuscation ---
 	if resp.Features.URL.IsURLShortener {
-		badReasons = append(badReasons, "This is a shortened URL, which may hide the real website address.")
+		badReasons = append(badReasons, "URL Shortener detected (hides the true destination).")
 		riskScore += 25
 	}
 
 	// Uses IP
 	if resp.Features.URL.UsesIP {
-		badReasons = append(badReasons, "The website uses an IP address instead of a domain name, which is unusual for trusted sites.")
+		badReasons = append(badReasons, "Raw IP address usage detected (common evasion tactic).")
 		riskScore += 100
 	}
 
 	// Punycode
 	if resp.Features.URL.ContainsPunycode {
-		badReasons = append(badReasons, "The URL uses special characters to imitate a real website, which may be misleading.")
+		badReasons = append(badReasons, "Punycode characters detected (potential phishing spoof).")
 		riskScore += 100
 	}
 
 	// Too deep
 	if resp.Features.URL.TooDeep {
-		badReasons = append(badReasons, "The URL has many slashes, which can sometimes indicate a suspicious page.")
+		badReasons = append(badReasons, "Excessively deep URL path (potential request hiding).")
 		riskScore += 30
 	}
 
 	// Too long
 	if resp.Features.URL.TooLong {
-		badReasons = append(badReasons, "The URL is unusually long, which may hide malicious content.")
+		badReasons = append(badReasons, "URL length exceeds standard limits (potential buffer overflow/hiding).")
 		riskScore += 20
 	}
 
 	// Subdomain Count
 	if resp.Features.URL.SubdomainCount > 2 {
-		badReasons = append(badReasons, "The website has many subdomains, which can be a trick to mimic trusted sites.")
+		badReasons = append(badReasons, "Suspicious number of subdomains detected.")
 		riskScore += 15
 	}
 
 	// Keywords
 	if resp.Features.URL.Keywords.HasKeywords {
-		badReasons = append(badReasons, fmt.Sprintf("The URL contains sensitive keywords like %s, which may indicate phishing or scams.", strings.Join(resp.Features.URL.Keywords.Found, ", ")))
+		badReasons = append(badReasons, fmt.Sprintf("Sensitive security keywords found in URL: %s", strings.Join(resp.Features.URL.Keywords.Found, ", ")))
 		riskScore += 10
 	}
 
-	// Nameservers
+	// --- 5. Infrastructure Forensics ---
 	if resp.Infrastructure.NameserversValid {
-		goodReasons = append(goodReasons, "The website’s server information is properly verified.")
+		goodReasons = append(goodReasons, "Valid DNS configuration detected.")
 		trustScore += 10
 	} else {
-		badReasons = append(badReasons, "The website’s server information couldn’t be fully verified.")
+		badReasons = append(badReasons, "Incomplete or missing DNS configuration.")
 		riskScore += 10
 	}
 
 	// MX records
 	if resp.Infrastructure.MXRecordsValid {
-		goodReasons = append(goodReasons, "The website can properly receive emails, which is a good sign.")
+		goodReasons = append(goodReasons, "Valid email server configuration (MX Records).")
 		trustScore += 10
 	} else {
-		badReasons = append(badReasons, "The website may not have proper email setup.")
-		riskScore += 10
+		neutralReasons = append(neutralReasons, "No email server configured for this domain.")
+		// Reduced risk score here, as some landing pages legitimately don't have email
+		riskScore += 5
 	}
 
-	// Domain age
+	// --- 6. Domain History ---
 	if resp.DomainInfo != nil {
 		if resp.DomainInfo.AgeDays <= 30 {
-			badReasons = append(badReasons, fmt.Sprintf("The website is very new (%s), which may be risky.", resp.DomainInfo.AgeHuman))
+			badReasons = append(badReasons, fmt.Sprintf("Newly created domain (%s old). High Risk.", resp.DomainInfo.AgeHuman))
 			riskScore += 25
 		} else if resp.DomainInfo.AgeDays <= 365 {
-			badReasons = append(badReasons, fmt.Sprintf("The website is new (%s), use caution.", resp.DomainInfo.AgeHuman))
+			badReasons = append(badReasons, fmt.Sprintf("Young domain (%s old). Use caution.", resp.DomainInfo.AgeHuman))
 			riskScore += 15
 		} else if resp.DomainInfo.AgeDays <= 1825 {
-			neutralReasons = append(neutralReasons, fmt.Sprintf("The website has been around for a while (%s).", resp.DomainInfo.AgeHuman))
+			neutralReasons = append(neutralReasons, fmt.Sprintf("Operational for %s.", resp.DomainInfo.AgeHuman))
 			trustScore += 5
-		} else if resp.DomainInfo.AgeDays <= 3650 {
-			neutralReasons = append(neutralReasons, fmt.Sprintf("The website is mature (%s), generally trustworthy.", resp.DomainInfo.AgeHuman))
-			trustScore += 10
 		} else {
-			goodReasons = append(goodReasons, fmt.Sprintf("The website is very old (%s), which is a good sign of reliability.", resp.DomainInfo.AgeHuman))
+			goodReasons = append(goodReasons, fmt.Sprintf("Long-standing domain history (%s).", resp.DomainInfo.AgeHuman))
 			trustScore += 15
 		}
 
 		if resp.DomainInfo.Registrar != "" {
-			goodReasons = append(goodReasons, fmt.Sprintf("The website is registered with %s.", resp.DomainInfo.Registrar))
+			goodReasons = append(goodReasons, fmt.Sprintf("Registered with %s", resp.DomainInfo.Registrar))
 			trustScore += 5
 		}
 
+		// DNSSEC Logic Updated
 		if resp.DomainInfo.DNSSEC {
-			goodReasons = append(goodReasons, "The website has extra security checks enabled (DNSSEC).")
+			goodReasons = append(goodReasons, "Advanced DNS security enabled (DNSSEC).")
 			trustScore += 10
 		} else {
-			badReasons = append(badReasons, "The website does not have extra security checks enabled (DNSSEC).")
-			riskScore += 5
+			// Moved to Neutral. Not having DNSSEC is NOT a sign of phishing for .coms
+			neutralReasons = append(neutralReasons, "Standard DNS security (DNSSEC not enabled).")
+			// Removed riskScore penalty
 		}
 	}
 
-	// Redirect chain
+	// --- 7. Redirection Analysis ---
 	if resp.Analysis.RedirectionResult.IsRedirected {
 		if resp.Analysis.RedirectionResult.ChainLength > 3 {
-			badReasons = append(badReasons, fmt.Sprintf("The website redirects multiple times (%d hops), which can be suspicious.", resp.Analysis.RedirectionResult.ChainLength))
+			badReasons = append(badReasons, fmt.Sprintf("Excessive redirection chain detected (%d hops).", resp.Analysis.RedirectionResult.ChainLength))
 			riskScore += 40
 		}
 
 		if resp.Analysis.RedirectionResult.HasDomainJump {
-			badReasons = append(badReasons, "The website redirects to a different domain, which is risky.")
-			badReasons = append(badReasons, fmt.Sprintf("The final website you are sent to is: %s", resp.Analysis.RedirectionResult.FinalURLHost))
+			badReasons = append(badReasons, "Cross-domain redirection detected (destination differs from source).")
+			// Add the destination as a neutral fact so they can see where they are going
+			badReasons = append(badReasons, fmt.Sprintf("Final Destination: %s", resp.Analysis.RedirectionResult.FinalURLHost))
 			riskScore += 50
 		}
 	}
 
-	// Homoglyph
+	// --- 8. Homoglyphs ---
 	if resp.Features.URL.HasHomoglyph {
-		badReasons = append(badReasons, "The website uses letters or characters that look like real ones to trick users, which is risky.")
+		badReasons = append(badReasons, "Homoglyph attack detected (deceptive visual characters).")
 		riskScore += 60
 	}
 
