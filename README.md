@@ -1,7 +1,7 @@
 <!-- SEO & Social Metadata -->
-<meta name="title" content="SafeSurf — Open-Source Phishing Detection & Malicious URL Analysis">
+<meta name="title" content="SafeSurf — Open-Source Phishing Detection & URL Analysis">
 <meta name="description" content="Real-time phishing detection, URL threat analysis, domain intelligence, and risk scoring built with Go and Svelte.">
-<meta property="og:title" content="SafeSurf — Phishing Detection & Malicious URL Scanner">
+<meta property="og:title" content="SafeSurf — Phishing Detection & URL Analysis">
 <meta property="og:description" content="Analyze and detect phishing URLs using DNS, TLS, redirects, entropy, WHOIS/RDAP, and page-content intelligence.">
 <meta property="og:image" content="https://raw.githubusercontent.com/abhizaik/SafeSurf/main/web/static/images/safesurf-normal.png">
 <meta property="og:type" content="website">
@@ -19,7 +19,7 @@
 
 <div align="center">
 
-# Open Source Phishing Detection & Malicious URL Analysis
+# Open Source Phishing Detection & URL Analysis
 
 [![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go&logoColor=white)](https://go.dev)
 [![Svelte](https://img.shields.io/badge/Svelte-5-orange?logo=svelte)](https://svelte.dev)
@@ -40,7 +40,7 @@
 [⚡ Quick Start](#-quick-start) ·
 [📚 Docs](#-documentation) ·
 [🧠 Features](#-features) ·
-[🏗️ Architecture](#-architecture) ·
+[🏛 Architecture](#-architecture) ·
 [🧪 Testing](#-testing) ·
 [🤝 Contributing](#-contributing) ·
 [🌍 Community](#-community)
@@ -53,17 +53,15 @@
 
 - Detects phishing, malicious redirects and homoglyph attacks
 
-- Provides risk scoring with detailed report
+- Easy to use for common people (result has a verdict, trust score and detailed report)
 
-- Easy to use for common people 
+- Has web UI, open REST API, and browser extension
 
 - Runs parallel analyzers (fast, real time results)
 
-- Includes a web UI, REST API, and browser extension
+- Built with Go and Svelte (simple and fast)
 
 - Completely open source
-
-- Built with Go and Svelte (simple and fast tech)
 
 
 ## ⚡ Quick Start
@@ -241,7 +239,7 @@ Start from the [docs index](docs/README.md) for a curated overview.
 
 For a detailed look at how the analyzers work and how data moves through the system, check out `docs/architecture.md` and `docs/data-flow.md`.
 
-## 🏗️ Architecture
+## 🏛 Architecture
 
 High‑level:
 - **Go backend** (`server/`) — Gin HTTP API, analyzer orchestration, rank and domain info services, screenshot worker.
@@ -267,18 +265,14 @@ See `docs/architecture.md` for diagrams and more detail.
 
 ## 🧪 Testing
 
-- **Backend unit tests**
+- **Backend**
   ```bash
   cd server
   go test ./...
   ```
 
-- **Static analysis**
-  ```bash
-  make lint-backend   # go vet ./...
-  ```
 
-- **Frontend checks**
+- **Frontend**
   ```bash
   cd web/website
   npm run check       # type checks (if configured)
