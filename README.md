@@ -1,14 +1,25 @@
+<!-- SEO & Social Metadata -->
+<meta name="title" content="SafeSurf — Open-Source Phishing Detection & Malicious URL Analysis">
+<meta name="description" content="Real-time phishing detection, URL threat analysis, domain intelligence, and risk scoring built with Go and Svelte.">
+<meta property="og:title" content="SafeSurf — Phishing Detection & Malicious URL Scanner">
+<meta property="og:description" content="Analyze and detect phishing URLs using DNS, TLS, redirects, entropy, WHOIS/RDAP, and page-content intelligence.">
+<meta property="og:image" content="https://raw.githubusercontent.com/abhizaik/SafeSurf/main/web/static/images/safesurf-normal.png">
+<meta property="og:type" content="website">
+<meta name="keywords" content="phishing detection, url scanner, malicious url detection, domain risk analysis, security tools, cyber security, Go backend, Svelte frontend, SOC tools, threat intelligence, abhizaik">
+
+
+
 <div align="center">
 
   <picture>
-    <img src="./web/static/images/safesurf-normal.png" width="22%" style="border: none; box-shadow: none;" alt="SafeSurf Logo">
+    <img src="./web/static/images/safesurf-normal.png" width="30%" style="border: none; box-shadow: none;" alt="SafeSurf Logo">
   </picture>
 
 </div>
 
 <div align="center">
 
-# SafeSurf · Phishing Intelligence
+# Open Source Phishing Detection & Malicious URL Analysis
 
 [![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go&logoColor=white)](https://go.dev)
 [![Svelte](https://img.shields.io/badge/Svelte-5-orange?logo=svelte)](https://svelte.dev)
@@ -16,7 +27,9 @@
 [![GitHub stars](https://img.shields.io/github/stars/abhizaik/SafeSurf?style=social)](https://github.com/abhizaik/SafeSurf)
 ![Contributors](https://img.shields.io/github/contributors/abhizaik/SafeSurf)
 
-**Real‑time phishing and domain risk intelligence for security teams, SOCs, and browser clients.**
+**SafeSurf is a fast, open-source phishing detection engine that analyzes URLs using DNS, TLS, redirects, entropy, ranking, WHOIS/RDAP, page content, and more.**
+
+
 
 </div>
 
@@ -24,48 +37,211 @@
 
 <div align="center">
 
-[🚀 Quick Start](#-quick-start) ·
+[⚡ Quick Start](#-quick-start) ·
 [📚 Docs](#-documentation) ·
-[🧠 Features](#-core-capabilities) ·
-[🏗️ Architecture](#-architecture--project-layout) ·
-[🧪 Testing](#-testing--quality) ·
-[🤝 Contributing](#-contributing)  
+[🧠 Features](#-features) ·
+[🏗️ Architecture](#-architecture) ·
+[🧪 Testing](#-testing) ·
+[🤝 Contributing](#-contributing) ·
+[🌍 Community](#-community)
 
 </div>
 
 ---
 
-## What is SafeSurf?
+## Why SafeSurf?
 
-SafeSurf is a phishing detection and URL intelligence engine. It fans out multiple analyzers in parallel (DNS, TLS, redirects, entropy, homoglyphs, keywords, rank, content, domain info) and returns both:
-- **Machine‑readable signals** that are easy to integrate into SIEM, SOAR, and browser extensions.
-- **Human‑friendly context** for common people, security analysts and incident responders.
+- Detects phishing, malicious redirects and homoglyph attacks
 
-SafeSurf powers:
-- A **REST API** you can drop behind an API gateway.
-- A **web tool** for manual investigations.
-- A **chrome extension** that flags suspicious URLs directly in the browser.
+- Provides risk scoring with detailed report
 
-## 🧠 Core Capabilities
+- Easy to use for common people 
+
+- Runs parallel analyzers (fast, real time results)
+
+- Includes a web UI, REST API, and browser extension
+
+- Completely open source
+
+- Built with Go and Svelte (simple and fast tech)
+
+
+## ⚡ Quick Start
+
+The full setup guide is given in `docs/setup.md`. A short version is given below:
+
+1. Clone the repo
+
+```bash
+git clone https://github.com/abhizaik/phishing-detection.git
+cd phishing-detection
+```
+2. Start the application
+
+**Option 1: Docker (recommended)**
+```bash
+make dev-up
+```
+
+**Option 2: Local Go + Svelte**
+```bash
+cd server && go run ./cmd/safesurf      # backend on :8080
+cd ../web/website && npm install && npm run dev   # UI on :5173
+```
+
+3. Use the app
+- Open the web UI on browser: **[localhost:5173](http://localhost:5173)** 
+- Or call the API:
+```bash
+curl "http://localhost:8080/api/v1/analyze?url=https://example.com"
+```
+
+<details>
+  <summary>Example Output</summary>
+
+```json
+{
+  "url": "http://example.com",
+  "domain": "example.com",
+  "features": {
+    "rank": 164,
+    "tld": {
+      "tld": "com",
+      "is_trusted_tld": false,
+      "is_risky_tld": false,
+      "is_icann": true
+    },
+    "url": {
+      "url_shortener": false,
+      "uses_ip": false,
+      "contains_punycode": false,
+      "too_long": false,
+      "too_deep": false,
+      "has_homoglyph": false,
+      "subdomain_count": 0,
+      "keywords": {
+        "has_keywords": false,
+        "found": [],
+        "categories": {
+
+        }
+      }
+    }
+  },
+  "infrastructure": {
+    "ip_addresses": [
+      "23.220.75.245"
+    ],
+    "nameservers_valid": true,
+    "ns_hosts": [
+      "b.iana-servers.net."
+    ],
+    "mx_records_valid": false,
+    "mx_hosts": [
+      "."
+    ]
+  },
+  "domain_info": {
+    "domain": "EXAMPLE.COM",
+    "registrar": "RESERVED-Internet Assigned Numbers Authority",
+    "created": "1995-08-14T04:00:00Z",
+    "updated": "2025-11-25T18:49:24Z",
+    "expiry": "2026-08-13T04:00:00Z",
+    "nameservers": [
+      "A.IANA-SERVERS.NET"
+    ],
+    "status": [
+      "client delete prohibited"
+    ],
+    "dnssec": true,
+    "age_human": "30 years 4 months",
+    "age_days": 11075,
+    "raw": "{\"ldhName\":\"EXAMPLE.COM\",\"nameservers\":[{\"ldhName\":\"A.IANA-SERVERS.NET\"},{\"ldhName\":\"B.IANA-SERVERS.NET\"}],\"events\":[{\"eventAction\":\"registration\",\"eventDate\":\"1995-08-14T04:00:00Z\"},{\"eventAction\":\"expiration\",\"eventDate\":\"2026-08-13T04:00:00Z\"},{\"eventAction\":\"last changed\",\"eventDate\":\"2025-11-25T18:49:24Z\"},{\"eventAction\":\"last update of RDAP database\",\"eventDate\":\"2025-12-09T16:08:08Z\"}],\"entities\":[{\"roles\":[\"registrar\"],\"vcardArray\":[\"vcard\",[[\"version\",{},\"text\",\"4.0\"],[\"fn\",{},\"text\",\"RESERVED-Internet Assigned Numbers Authority\"]]]}],\"status\":[\"client delete prohibited\",\"client transfer prohibited\",\"client update prohibited\"],\"secureDNS\":{\"delegationSigned\":true}}",
+    "source": "RDAP"
+  },
+  "analysis": {
+    "redirection_result": {
+      "is_redirected": false,
+      "chain_length": 1,
+      "chain": [
+        "http://example.com"
+      ],
+      "final_url": "http://example.com",
+      "final_url_domain": "example.com",
+      "has_domain_jump": false
+    },
+    "http_status": {
+      "code": 200,
+      "text": "OK",
+      "success": true,
+      "is_redirect": false
+    },
+    "is_hsts_supported": false
+  },
+  "result": {
+    "risk_score": 5,
+    "trust_score": 100,
+    "final_score": 99,
+    "verdict": "Safe",
+    "reasons": {
+      "neutral_reasons": [
+        "Standard, officially recognized domain extension.",
+        "No email server configured for this domain."
+      ],
+      "good_reasons": [
+        "Global Giant: Ranked #164 worldwide.",
+        "Valid DNS configuration detected.",
+        "Long-standing domain history (30 years 4 months).",
+        "Registered with RESERVED-Internet Assigned Numbers Authority",
+        "Advanced DNS security enabled (DNSSEC)."
+      ],
+      "bad_reasons": null
+    }
+  },
+  "incomplete": false,
+  "errors": null
+}
+```
+</details>
+
+
+## 📚 Documentation
+
+All detailed docs are under `docs/`:
+- **Setup** — local & Docker workflows: `docs/setup.md`
+- **Architecture** — components, data flow, diagrams: `docs/architecture.md`, `docs/data-flow.md`
+- **Configuration** — env vars, paths, knobs: `docs/configuration.md`
+- **CLI & Makefile tooling** — `docs/cli.md`
+- **API reference** — endpoints, samples, OpenAPI, Postman: `docs/api.md`
+- **Deployment** — Docker, K8s, CI/CD: `docs/deployment.md`
+- **Testing & performance** — `docs/testing.md`, `docs/performance.md`
+- **Security & operations** — `docs/security.md`, `docs/maintenance.md`
+- **Design decisions, FAQ, glossary** — `docs/design-decisions.md`, `docs/faq.md`, `docs/glossary.md`
+
+Start from the [docs index](docs/README.md) for a curated overview.
+
+
+
+## 🧠 Features
 
 - **Parallel signal fan‑out**  
-  Rank, DNS, TLS, redirects, entropy, homoglyphs, URL structure, and keyword-based heuristics run concurrently with per‑task timing.
+  Ranking, DNS, TLS, redirects, entropy, homoglyph tricks, URL patterns, and keyword signals all run in parallel.
 
 - **Deep infrastructure context**  
-  WHOIS/RDAP normalization, MX/NS health checks, IP resolution, and domain age analysis via `domaininfo` services.
+  Normalized WHOIS/RDAP data, MX/NS checks, IP lookups, and domain-age analysis.
 
-- **Lexical & content analysis**  
-  URL length/depth, subdomain patterns, risky/trusted TLD sets, URL shortener detection, and page content extraction hooks.
+- **Smart URL & content analysis**  
+  Looks at URL depth, subdomain patterns, risky TLDs, shorteners, and can pull page content when needed.
 
-- **Evidence generation**  
-  Full‑page screenshots via headless Chrome (`chromedp`), stored under `server/tmp/screenshots` for later review.
+- **Screenshot support**  
+  Can capture full-page screenshots using headless Chrome.
 
-- **Explainable results**  
-  Responses include features, infrastructure, analysis, performance timings, and a synthesized `result` section with a risk score.
+- **Clear, explainable output**  
+  Returns features, infra data, analysis details, timing info, and a final risk score with a simple verdict.
 
-For a deeper walkthrough of analyzers and data flow, see `docs/architecture.md` and `docs/data-flow.md`.
+For a detailed look at how the analyzers work and how data moves through the system, check out `docs/architecture.md` and `docs/data-flow.md`.
 
-## 🏗️ Architecture & Project Layout
+## 🏗️ Architecture
 
 High‑level:
 - **Go backend** (`server/`) — Gin HTTP API, analyzer orchestration, rank and domain info services, screenshot worker.
@@ -86,45 +262,10 @@ docs/                 Architecture, setup, API, security, testing, etc.
 
 See `docs/architecture.md` for diagrams and more detail.
 
-## 🚀 Quick Start
 
-The full setup guide lives in `docs/setup.md`. The ultra‑short version:
 
-```bash
-git clone https://github.com/abhizaik/SafeSurf.git
-cd SafeSurf
 
-# Option 1: Docker (recommended)
-make dev-up
-
-# Option 2: Local Go + Svelte
-cd server && go run ./cmd/safesurf      # backend on :8080
-cd ../web/website && npm install && npm run dev   # UI on :5173
-```
-
-Then:
-```bash
-curl "http://localhost:8080/api/v1/analyze?url=https://example.com"
-```
-
-Make sure `server/assets/top-1m.csv` contains a recent rank dataset; the backend loads it automatically on startup.
-
-## 📚 Documentation
-
-All detailed docs are under `docs/`:
-- **Setup** — local & Docker workflows: `docs/setup.md`
-- **Architecture** — components, data flow, diagrams: `docs/architecture.md`, `docs/data-flow.md`
-- **Configuration** — env vars, paths, knobs: `docs/configuration.md`
-- **CLI & Makefile tooling** — `docs/cli.md`
-- **API reference** — endpoints, samples, OpenAPI, Postman: `docs/api.md`
-- **Deployment** — Docker, K8s, CI/CD: `docs/deployment.md`
-- **Testing & performance** — `docs/testing.md`, `docs/performance.md`
-- **Security & operations** — `docs/security.md`, `docs/maintenance.md`
-- **Design decisions, FAQ, glossary** — `docs/design-decisions.md`, `docs/faq.md`, `docs/glossary.md`
-
-Start from the [docs index](docs/README.md) for a curated overview.
-
-## 🧪 Testing & Quality
+## 🧪 Testing
 
 - **Backend unit tests**
   ```bash
@@ -150,27 +291,23 @@ See `docs/testing.md` for integration tests, load testing, and coverage tips.
 
 ## 🤝 Contributing
 
-Bug reports and design discussions are welcome via GitHub Issues and Discussions.
+Bug reports and feature ideas are welcome in GitHub Issues or Discussions.
 
-1. Fork and create a feature branch (for example, `feat/tls-strength-signal`).
+1. Fork the repo and create a feature branch (for example, `feat/feature-name`).
 2. Implement your change with tests (`make test-backend`) and keep Go/Svelte code formatted.
-3. Update or add docs in `docs/` so users understand the new behavior.
-4. Open a PR with:
-   - A short description of what changed.
-   - Sample analyzer outputs (before/after) where relevant.
-   - Any operational or security implications.
+3. Update or add docs in `docs/` if behavior changes.
+4. Open a PR with description 
 
 
 
 
-## Community
+## 🌍 Community
 
-If SafeSurf is useful to you, **please consider starring the repository**,  it helps others discover the project.
+If SafeSurf helps you, **leave a star** so others can find it!
 
-You share analyzer outputs or use‑cases as GitHub issues to get them fixed or added as a feature.
+Feel free to start issues or discussions if you want fixes or new features added.
 
-
-Thank you for helping make the web a little safer. 
+Thanks for helping make the web safer.
 
 
 
