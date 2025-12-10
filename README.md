@@ -1,33 +1,12 @@
-<!-- SEO & Social Metadata -->
-<meta name="title" content="SafeSurf — Open-Source Phishing Detection & URL Analysis">
-<meta name="description" content="Real-time phishing detection, URL threat analysis, domain intelligence, and risk scoring built with Go and Svelte.">
-<meta property="og:title" content="SafeSurf — Phishing Detection & URL Analysis">
-<meta property="og:description" content="Analyze and detect phishing URLs using DNS, TLS, redirects, entropy, WHOIS/RDAP, and page-content intelligence.">
-<meta property="og:image" content="https://raw.githubusercontent.com/abhizaik/SafeSurf/main/web/static/images/safesurf-normal.png">
-<meta property="og:type" content="website">
-<meta name="keywords" content="phishing detection, url scanner, malicious url detection, domain risk analysis, security tools, cyber security, Go backend, Svelte frontend, SOC tools, threat intelligence, abhizaik">
-
-
-
-<div align="center">
-
-  <picture>
-    <img src="./web/static/images/safesurf-normal.png" width="30%" style="border: none; box-shadow: none;" alt="SafeSurf Logo">
-  </picture>
-
-</div>
-
-<div align="center">
-
-# Open Source Phishing Detection & URL Analysis
+# Phishing Detection 
 
 [![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go&logoColor=white)](https://go.dev)
 [![Svelte](https://img.shields.io/badge/Svelte-5-orange?logo=svelte)](https://svelte.dev)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/abhizaik/SafeSurf?style=social)](https://github.com/abhizaik/SafeSurf)
-![Contributors](https://img.shields.io/github/contributors/abhizaik/SafeSurf)
+[![GitHub stars](https://img.shields.io/github/stars/abhizaik/phishing-detection?style=social)](https://github.com/abhizaik/phishing-detection)
+![Contributors](https://img.shields.io/github/contributors/abhizaik/phishing-detection)
 
-**SafeSurf is a fast, open-source phishing detection engine that analyzes URLs using DNS, TLS, redirects, entropy, ranking, WHOIS/RDAP, page content, and more.**
+**A fast, open source engine for phishing detection and URL analysis.**
 
 
 
@@ -35,7 +14,6 @@
 
 ---
 
-<div align="center">
 
 [⚡ Quick Start](#-quick-start) ·
 [📚 Docs](#-documentation) ·
@@ -45,13 +23,12 @@
 [🤝 Contributing](#-contributing) ·
 [🌍 Community](#-community)
 
-</div>
 
 ---
 
-## Why SafeSurf?
+## Why this tool?
 
-- Detects phishing, malicious redirects and homoglyph attacks
+- Phishing detection, redirect checks and URL analysis
 
 - Easy to use for common people (result has a verdict, trust score and detailed report)
 
@@ -285,19 +262,27 @@ See `docs/testing.md` for integration tests, load testing, and coverage tips.
 
 ## 🤝 Contributing
 
-Bug reports and feature ideas are welcome in GitHub Issues or Discussions.
+Contributions are always welcome, whether it’s bug reports, feature ideas, or pull requests.
 
-1. Fork the repo and create a feature branch (for example, `feat/feature-name`).
+### Submitting ideas or issues
+- Use [GitHub Issues](https://github.com/abhizaik/phishing-detection/issues) to report bugs or suggest features.
+- Provide a clear title, detailed description, and steps to reproduce (if reporting a bug).
+- For feature ideas, describe the problem, proposed solution, and any examples.
+
+### Contributing code
+1. Fork the repo and create a feature branch (for example, `feat/new-feature`).
 2. Implement your change with tests (`make test-backend`) and keep Go/Svelte code formatted.
 3. Update or add docs in `docs/` if behavior changes.
-4. Open a PR with description 
+4. Open a pull request with a clear description.
+
+For a detailed guide, see the [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 
 
 
 ## 🌍 Community
 
-If SafeSurf helps you, **leave a star** so others can find it!
+**If this project helped you, give it a star. It makes a difference.**
 
 Feel free to start issues or discussions if you want fixes or new features added.
 
@@ -305,15 +290,15 @@ Thanks for helping make the web safer.
 
 
 
-<!-- ## Community Growth Trajectory -->
-<!-- [![Community Growth Trajectory](https://api.star-history.com/svg?repos=abhizaik/safesurf&type=date&legend=top-left)](https://www.star-history.com/#abhizaik/safesurf&type=date&legend=top-left) -->
 
 <div align="center">
-  <a href="https://star-history.com/#abhizaik/SafeSurf&Date">
+  <a href="https://star-history.com/#abhizaik/phishing-detection&Date">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=abhizaik/SafeSurf&type=Date&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=abhizaik/SafeSurf&type=Date" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=abhizaik/SafeSurf&type=Date" style="border-radius: 15px; box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);" />
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=abhizaik/phishing-detection&type=Date&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api/star-history.com/svg?repos=abhizaik/phishing-detection&type=Date" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=abhizaik/phishing-detection&type=Date" />
     </picture>
   </a>
 </div>
+
+<!-- [![Community Growth Trajectory](https://api.star-history.com/svg?repos=abhizaik/phishing-detection&type=date&legend=top-left)](https://www.star-history.com/#abhizaik/phishing-detection&type=date&legend=top-left) -->
