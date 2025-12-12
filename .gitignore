@@ -55,6 +55,7 @@ build/
 Thumbs.db
 *.tmp
 *.bak
+.make_timer
 
 
 TODO.md

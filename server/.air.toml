@@ -7,7 +7,10 @@ bin = "tmp/safesurf"
 full_bin = "tmp/safesurf"
 
 include_ext = ["go", "tpl", "tmpl", "html"]
-exclude_dir = ["tmp", "vendor"]
+exclude_dir = ["tmp", "vendor", ".git"]
 
 [log]
 time = true
+
+[screen]
+clear_on_rebuild = true

@@ -1,0 +1,56 @@
+services:
+  backend:
+    build:
+      context: ../../server
+      dockerfile: ../docker/prod/go.Dockerfile
+    container_name: safesurf-backend
+    environment:
+      VALKEY_ADDR: "valkey:6379"
+      PORT: "8080"
+    depends_on:
+      valkey:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - safesurf-net
+
+  web:
+    build:
+      context: ../..
+      dockerfile: ./docker/prod/web.Dockerfile
+    container_name: safesurf-web
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    networks:
+      - safesurf-net
+
+  valkey:
+    image: valkey/valkey:8.0
+    container_name: safesurf-valkey
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+      - ./valkey.conf:/usr/local/etc/valkey.conf:ro
+    command: ["valkey-server", "/usr/local/etc/valkey.conf"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "localhost", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - safesurf-net
+
+networks:
+  safesurf-net:
+    driver: bridge
+
+volumes:
+  valkey_data:

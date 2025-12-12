@@ -37,7 +37,7 @@ func TakeScreenshot(url string) string {
 	timestamp := time.Now().Format("20060102-150405")
 	urlStr := sanitizeURL(url)
 	filename := "screenshot-" + timestamp + "-" + urlStr + ".png"
-	dir := filepath.Join(".", "server", "tmp", "screenshots") // ./server/tmp/screenshots
+	dir := filepath.Join(".", "tmp", "screenshots") // ./server/tmp/screenshots
 
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 		log.Fatal(err)
