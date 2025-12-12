@@ -1,0 +1,65 @@
+services:
+  backend:
+    build:
+      context: ../../server         # build context is the server folder
+      dockerfile: ../docker/dev/go.Dockerfile
+    container_name: safesurf-backend-dev
+    environment:
+      VALKEY_ADDR: "valkey:6379"
+      PORT: "8080"
+    volumes:
+      - ../../server:/app/server           # mount source for instant edits
+      - ../../server/.air.toml:/app/.air.toml:ro
+      # Optional: mount screenshots to host for easy viewing/debug
+      - safesurf_screenshots:/app/tmp/screenshots
+    ports:
+      - "8080:8080"
+    depends_on:
+      valkey:
+        condition: service_healthy
+    networks:
+      - safesurf-dev-net
+
+  web:
+    build:
+      context: ../..                # repo root (so Dockerfile can COPY web/website/package*.json)
+      dockerfile: ./docker/dev/web.Dockerfile
+    container_name: safesurf-web-dev
+    working_dir: /app
+    environment:
+      - HOST=0.0.0.0
+      - PORT=5173
+    volumes:
+      - ../../web/website:/app      # mount svelte source for hot reload
+      - /app/node_modules          # keep container's node_modules (avoid host fs issues)
+    ports:
+      - "5173:5173"
+    networks:
+      - safesurf-dev-net
+
+  valkey:
+    image: valkey/valkey:8.0
+    container_name: safesurf-valkey-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_dev_data:/data
+    command: >
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "localhost", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - safesurf-dev-net
+
+networks:
+  safesurf-dev-net:
+    driver: bridge
+
+volumes:
+  valkey_dev_data:
+  safesurf_screenshots:

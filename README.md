@@ -43,7 +43,7 @@
 
 ## ⚡ Quick Start
 
-The full setup guide is given in `docs/setup.md`. A short version is given below:
+The full setup guide is given in [setup.md](docs/setup.md). A short version is given below:
 
 1. Clone the repo
 
@@ -55,10 +55,14 @@ cd phishing-detection
 
 **Option 1: Docker (recommended)**
 ```bash
-make dev-up
+make build
+make up
 ```
+Now you can use the web UI on browser: **[localhost:3000](http://localhost:3000)** 
 
 **Option 2: Local Go + Svelte**
+
+For this you need Go and Node.js installed on your machine.
 ```bash
 cd server && go run ./cmd/safesurf      # backend on :8080
 cd ../web/website && npm install && npm run dev   # UI on :5173
