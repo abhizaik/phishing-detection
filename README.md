@@ -12,11 +12,11 @@
 
 
 
-[⚡ Quick Start](#-quick-start) ·
-[📚 Docs](#-documentation) ·
-[🏛 Architecture](#-architecture) ·
-[🤝 Contributing](#-contributing) ·
-[🌍 Community](#-community)
+[⚡ Quick Start](#quick-start) ·
+[📚 Docs](#documentation) ·
+[🏛 Architecture](#architecture) ·
+[🤝 Contributing](#contributing) ·
+[🌍 Community](#community)
 
 
 </div>
@@ -25,16 +25,17 @@
 ## Demo
 
 
-> Paste a URL → get a verdict, trust score, and explanation in under a second.
+> Paste a URL → get a verdict, trust score, and detailed report in under a second.
 
 ![Phishing Analysis Demo](assets/demo.gif)
 
 
 
 
-## Why this project?
-Phishing is still one of the most effective attack vectors.  
-Most tools today are either **half-baked, opaque, slow, or locked behind expensive APIs**.
+## Why This Project?
+Phishing remains one of the most effective cyberattack vectors.
+
+Most existing tools are **slow**, **opaque**, **half baked**, or locked behind **expensive APIs**.
 
 This project gives you:
 - **Transparent** detection logic
@@ -42,7 +43,7 @@ This project gives you:
 - Multiple ways to consume results **(UI, API, extension)**
 - Full open source **control**
 
-## What it does
+### What it Does?
 
 - Analyzes URLs for **phishing indicators** and **malicious redirects**
 - Runs multiple analyzers in parallel for **low latency** results
@@ -83,7 +84,7 @@ Web UI: **[localhost:5173](http://localhost:5173)**
 
 ##  Documentation
 
-All documentation lives under `docs/`. Start here [docs/README.md](docs/README.md) 
+All documentation is under `docs/`. Start here [docs/README.md](docs/README.md) 
 
 
 
