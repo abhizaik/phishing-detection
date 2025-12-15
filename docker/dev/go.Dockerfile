@@ -22,7 +22,7 @@ RUN go install github.com/cosmtrek/air@v1.40.4
 
 ENV PATH=$PATH:/go/bin
 
-WORKDIR /app/server
+WORKDIR /app
 
 # Copy go.mod for dependency caching during image build (fast)
 COPY go.mod go.sum ./

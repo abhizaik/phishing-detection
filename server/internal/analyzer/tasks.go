@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"context"
+	"log"
 
 	"github.com/abhizaik/SafeSurf/internal/constants"
 	"github.com/abhizaik/SafeSurf/internal/service/checks"
@@ -312,7 +313,11 @@ func (httpCombinedTask) Run(in *Input, out *Output) error {
 			out.mu.Unlock()
 			return nil
 		} else if err != redis.Nil {
-			// Cache error (not a miss) - log but continue
+			// Cache error (not 
+			// a miss) - log but continue
+			log.Println("cache get error key=%s err=%v", cacheKey, err)
+		} else {
+			log.Println("cache miss key=%s", cacheKey)
 		}
 	}
 	
@@ -378,6 +383,20 @@ func (httpCombinedTask) Run(in *Input, out *Output) error {
 		out.mu.Lock()
 		out.SupportsHSTS = h
 		out.mu.Unlock()
+	}
+
+	// If at least one fallback succeeded, cache the result
+	if in.Cache != nil {
+		cached := httpCombinedCacheResult{
+			RedirectionResult: out.RedirectionResult,
+			StatusCode:        out.StatusCode,
+			StatusText:        out.StatusText,
+			StatusSuccess:     out.StatusSuccess,
+			StatusIsRedirect:  out.StatusIsRedirect,
+			SupportsHSTS:      out.SupportsHSTS,
+		}
+
+		_ = in.Cache.SetJSON(ctx, cacheKey, cached, constants.HTTPCombinedTTL)
 	}
 
 	// Return error only if all fallbacks failed
