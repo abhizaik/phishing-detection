@@ -42,6 +42,7 @@ COPY --from=builder /app/safesurf .
 
 # Copy assets folder
 COPY --from=builder /app/assets ./assets
+COPY --from=builder /app/.env ./.env
 
 ENV PORT=8080
 EXPOSE 8080
