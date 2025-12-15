@@ -1,6 +1,7 @@
 package analyzer
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -99,6 +100,13 @@ type Performance struct {
 type Input struct {
 	URL    string
 	Domain string
+	Cache  CacheInterface // Optional cache interface
+}
+
+// CacheInterface defines the cache operations needed by tasks
+type CacheInterface interface {
+	GetJSON(ctx context.Context, key string, dest interface{}) error
+	SetJSON(ctx context.Context, key string, value interface{}, ttl time.Duration) error
 }
 
 type Output struct {

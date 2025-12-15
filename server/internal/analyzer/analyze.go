@@ -2,8 +2,10 @@ package analyzer
 
 import (
 	"context"
+	"log"
 	"time"
 
+	"github.com/abhizaik/SafeSurf/internal/service/cache"
 	"github.com/abhizaik/SafeSurf/internal/service/checks"
 )
 
@@ -21,26 +23,33 @@ func Analyze(ctx context.Context, rawURL string) (Response, []error) {
 		return Response{}, []error{err}
 	}
 
-	in := &Input{URL: rawURL, Domain: domain}
+	// Initialize cache (non-blocking - if cache fails, continue without it)
+	var cacheInstance CacheInterface
+	cacheConn, err := cache.New()
+	if err != nil {
+		log.Printf("Warning: Failed to initialize cache: %v. Continuing without cache.", err)
+	} else {
+		cacheInstance = cacheConn
+		defer cacheConn.Close()
+	}
+
+	in := &Input{URL: rawURL, Domain: domain, Cache: cacheInstance}
 
 	tasks := []Task{
 		rankTask{},
-		hstsTask{},
+		httpCombinedTask{}, // Optimized: combines redirects, HSTS, and status code
 		ipCheckTask{},
 		ipResolveTask{},
 		punycodeTask{},
-		redirectsTask{},
 		tldTask{},
 		shortenerTask{},
-		statusTask{},
 		structureTask{},
 		keywordsTask{},
 		dnsValidityTask{},
 		subdomainTask{},
 		whoisTask{},
-		sslTask{},
+		tlsCombinedTask{}, // Optimized: combines TLS and SSL checks
 		entropyTask{},
-		tlsTask{},
 		contentTask{},
 		homoglyphTask{},
 	}
