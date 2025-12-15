@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/abhizaik/SafeSurf/internal/service/checks"
-	"github.com/abhizaik/SafeSurf/internal/service/screenshot"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,10 +28,10 @@ func ScreenshotHandler(c *gin.Context) {
 		return
 	}
 
-	filePath := screenshot.TakeScreenshot(rawURL)
+	// filePath := screenshot.TakeScreenshot(rawURL)
 
 	c.JSON(http.StatusOK, gin.H{
-		"file":   filePath,
+		// "file":   filePath,
 		"msg":    "screenshot captured successfully",
 		"status": "success",
 	})

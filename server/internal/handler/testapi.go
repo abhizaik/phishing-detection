@@ -5,8 +5,12 @@
 package handler
 
 import (
+	"context"
+	"log"
 	"net/http"
+	"time"
 
+	"github.com/abhizaik/SafeSurf/internal/service/cache"
 	"github.com/abhizaik/SafeSurf/internal/service/checks"
 	"github.com/gin-gonic/gin"
 )
@@ -34,9 +38,21 @@ func TestApiHandler(c *gin.Context) {
 	// THIS IS A TEMPORARY CODE SECTION
 	// MAKE CHANGES ONLY INSIDE THIS BOX
 	// SAFE TO DELETE LATER IF PUSHED BY MISTAKE
+	ctx := context.Background()
+
+	conn, err := cache.New()
+if err != nil {
+    log.Fatalf("failed to connect to redis: %v", err)
+	return 
+}
+
+
+	_ = conn.Set(ctx, "foo", "bar",time.Minute)
+	val, _ := conn.Get(ctx, "foo")
 
 	c.JSON(http.StatusOK, gin.H{
 		"domain": domain,
+		"val": val,
 	})
 
 	////////////////////////////////////////////////////////////////////
