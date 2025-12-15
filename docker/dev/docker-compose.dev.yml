@@ -8,7 +8,7 @@ services:
       VALKEY_ADDR: "valkey:6379"
       PORT: "8080"
     volumes:
-      - ../../server:/app/server           # mount source for instant edits
+      - ../../server:/app
       - ../../server/.air.toml:/app/.air.toml:ro
       # Optional: mount screenshots to host for easy viewing/debug
       - safesurf_screenshots:/app/tmp/screenshots
