@@ -13,7 +13,6 @@ func GenerateResult(resp Response) Result {
 	trustScore := 0
 	riskScore := 0
 
-
 	// --- 1. Popularity & Rank ---
 	if resp.Features.Rank == 0 {
 		// Changed from "Hardly known" to "Unranked"

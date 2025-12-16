@@ -60,7 +60,7 @@ func CheckHTTPCombined(rawURL string) (CombinedHTTPResult, error) {
 	}
 
 	client := &http.Client{
-		Timeout: 5 * time.Second, // Overall timeout (shouldn't be reached with header timeout)
+		Timeout:   5 * time.Second, // Overall timeout (shouldn't be reached with header timeout)
 		Transport: transport,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			redirects = append(redirects, req.URL.String())
@@ -148,7 +148,7 @@ func CheckHTTPCombined(rawURL string) (CombinedHTTPResult, error) {
 			httpsURL := "https://" + domain
 			hstsCtx, hstsCancel := context.WithTimeout(context.Background(), 800*time.Millisecond)
 			defer hstsCancel()
-			
+
 			// Use same transport but with context timeout
 			hstsReq, err := http.NewRequestWithContext(hstsCtx, "HEAD", httpsURL, nil)
 			if err == nil {
