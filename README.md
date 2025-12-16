@@ -64,21 +64,14 @@ cd phishing-detection
 ```
 2. Start the application
 
-**Option 1: Docker (recommended)**
+Prerequisite: Docker must be installed and running. <br>
+Windows: Use WSL or install make.
 ```bash
 make build
 make up
 ```
 Web UI: **[localhost:3000](http://localhost:3000)** 
 
-**Option 2: Local Go + Svelte**
-
-Requires Go and Node.js.
-```bash
-cd server && go run ./cmd/safesurf      # backend on :8080
-cd ../web/website && npm install && npm run dev   # UI on :5173
-```
-Web UI: **[localhost:5173](http://localhost:5173)** 
 
 
 

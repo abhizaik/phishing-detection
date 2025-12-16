@@ -2,7 +2,6 @@ package analyzer
 
 import (
 	"context"
-	"log"
 
 	"github.com/abhizaik/SafeSurf/internal/constants"
 	"github.com/abhizaik/SafeSurf/internal/service/checks"
@@ -169,10 +168,10 @@ func (keywordsTask) Run(in *Input, out *Output) error {
 type dnsValidityTask struct{}
 
 type dnsValidityResult struct {
-	NSValid  bool     `json:"ns_valid"`
-	NSHosts  []string `json:"ns_hosts"`
-	MXValid  bool     `json:"mx_valid"`
-	MXHosts  []string `json:"mx_hosts"`
+	NSValid bool     `json:"ns_valid"`
+	NSHosts []string `json:"ns_hosts"`
+	MXValid bool     `json:"mx_valid"`
+	MXHosts []string `json:"mx_hosts"`
 }
 
 func (dnsValidityTask) Name() string { return "dns_validity_check" }
@@ -298,7 +297,7 @@ func (httpCombinedTask) Name() string { return "http_combined_check" }
 func (httpCombinedTask) Run(in *Input, out *Output) error {
 	ctx := context.Background()
 	cacheKey := "http_combined:" + in.URL
-	
+
 	// Try cache first
 	if in.Cache != nil {
 		var cached httpCombinedCacheResult
@@ -313,14 +312,11 @@ func (httpCombinedTask) Run(in *Input, out *Output) error {
 			out.mu.Unlock()
 			return nil
 		} else if err != redis.Nil {
-			// Cache error (not 
-			// a miss) - log but continue
-			log.Println("cache get error key=%s err=%v", cacheKey, err)
+			// Cache error (not a miss) - log but continue
 		} else {
-			log.Println("cache miss key=%s", cacheKey)
 		}
 	}
-	
+
 	// Try combined HTTP check first
 	combinedResult, err := checks.CheckHTTPCombined(in.URL)
 	if err == nil {
@@ -337,7 +333,7 @@ func (httpCombinedTask) Run(in *Input, out *Output) error {
 			}
 			_ = in.Cache.SetJSON(ctx, cacheKey, cached, constants.HTTPCombinedTTL)
 		}
-		
+
 		out.mu.Lock()
 		out.RedirectionResult = combinedResult.RedirectionResult
 		out.StatusCode = combinedResult.StatusCode
@@ -411,7 +407,7 @@ func (httpCombinedTask) Run(in *Input, out *Output) error {
 type tlsCombinedTask struct{}
 
 type tlsCombinedCacheResult struct {
-	TLSInfo checks.TLSResult    `json:"tls_info"`
+	TLSInfo checks.TLSResult     `json:"tls_info"`
 	SSLInfo checks.SSLCertResult `json:"ssl_info"`
 }
 
@@ -419,7 +415,7 @@ func (tlsCombinedTask) Name() string { return "tls_combined_check" }
 func (tlsCombinedTask) Run(in *Input, out *Output) error {
 	ctx := context.Background()
 	cacheKey := "tls_combined:" + in.Domain
-	
+
 	// Try cache first
 	if in.Cache != nil {
 		var cached tlsCombinedCacheResult
@@ -433,7 +429,7 @@ func (tlsCombinedTask) Run(in *Input, out *Output) error {
 			// Cache error (not a miss) - log but continue
 		}
 	}
-	
+
 	// Try combined TLS/SSL check first
 	combinedResult, err := checks.CheckTLSCombined(in.Domain)
 	if err == nil {
@@ -446,7 +442,7 @@ func (tlsCombinedTask) Run(in *Input, out *Output) error {
 			}
 			_ = in.Cache.SetJSON(ctx, cacheKey, cached, constants.TLSCombinedTTL)
 		}
-		
+
 		out.mu.Lock()
 		out.TLSInfo = combinedResult.TLSInfo
 		out.SSLInfo = combinedResult.SSLInfo

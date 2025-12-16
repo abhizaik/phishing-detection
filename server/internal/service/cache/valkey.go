@@ -14,7 +14,6 @@ type Cache struct {
 	client *redis.Client
 }
 
-
 func New() (*Cache, error) {
 	// Get configuration from environment variables with defaults
 	addr := getEnv("CACHE_ADDR", "safesurf-valkey-dev:6379")
@@ -41,12 +40,10 @@ func New() (*Cache, error) {
 
 	return &Cache{client: rdb}, nil
 }
- 
 
 func (c *Cache) Close() error {
 	return c.client.Close()
 }
-
 
 func (c *Cache) Set(
 	ctx context.Context,
@@ -57,7 +54,6 @@ func (c *Cache) Set(
 	return c.client.Set(ctx, key, value, ttl).Err()
 }
 
-  
 func (c *Cache) Get(ctx context.Context, key string) (string, error) {
 	val, err := c.client.Get(ctx, key).Result()
 	if err == redis.Nil {
@@ -65,7 +61,6 @@ func (c *Cache) Get(ctx context.Context, key string) (string, error) {
 	}
 	return val, err
 }
-
 
 func (c *Cache) Delete(ctx context.Context, key string) error {
 	return c.client.Del(ctx, key).Err()
