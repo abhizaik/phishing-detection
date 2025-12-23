@@ -22,12 +22,12 @@
 </div>
 
 
-## Demo
+## Demo: How Phishing Detection Works
 
 
 > Paste a URL → get a verdict, trust score, and detailed report in under a second.
 
-![Phishing Analysis Demo](assets/demo.gif)
+![Phishing Detection Demo](assets/demo.gif)
 
 
 
