@@ -46,12 +46,47 @@ async function makeRequest<T>(endpoint: string, url: string): Promise<ApiRespons
   }
 }
 
+async function makeScreenshotRequest(url: string): Promise<ApiResponse<string | null>> {
+  try {
+    const formattedUrl = url.trim();
+    const encodedUrl = encodeURIComponent(formattedUrl);
+    const fullUrl = `${PUBLIC_BASE_URL}/screenshot?url=${encodedUrl}`;
+
+    console.log(`Making screenshot request to: ${fullUrl}`);
+
+    const response = await fetch(fullUrl);
+
+    console.log(`Screenshot response status: ${response.status}`);
+
+    if (!response.ok) {
+      console.error(`Screenshot API Error: HTTP ${response.status}`);
+      return { error: `HTTP ${response.status}` };
+    }
+
+    // Check if response is an image
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.startsWith('image/')) {
+      // Convert blob to object URL
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      console.log(`Screenshot received, blob URL created`);
+      return { data: blobUrl };
+    }
+
+    // If not an image, return null
+    return { data: null };
+  } catch (error) {
+    console.error(`Screenshot API Error:`, error);
+    return { error: error instanceof Error ? error.message : 'Network error' };
+  }
+}
+
 export const api = {
   async analyze(url: string): Promise<ApiResponse<any>> {
     return makeRequest<any>('/analyze', url);
   },
-  async screenshot(url: string): Promise<ApiResponse<any>> {
-    return makeRequest<any>('/screenshot', url);
+  async screenshot(url: string): Promise<ApiResponse<string | null>> {
+    return makeScreenshotRequest(url);
   },
   async getRank(url: string): Promise<ApiResponse<RankResponse>> {
     return makeRequest<RankResponse>('/rank', url);

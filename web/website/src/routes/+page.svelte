@@ -3,14 +3,14 @@
   import { onMount } from "svelte";
   import { api } from "../lib/api";
   import ResultSection from "../lib/components/ResultSection.svelte";
-  import type { AnalyzeResult, ScreenshotResponse } from "../lib/types";
+  import type { AnalyzeResult } from "../lib/types";
   import { formatUrl, isValidUrl } from "../lib/utils";
 
   let input = "";
   let loading = false;
   let error: string | null = null;
   let data: AnalyzeResult | null = null;
-  let screenshotData: ScreenshotResponse | null = null;
+  let screenshotUrl: string | null = null;
 
   type Verdict = "Safe" | "Risky" | "Unclear" | "Suspicious";
   const ACCENTS: Record<Verdict, { ring: string; glow: string; badge: string }> = {
@@ -68,14 +68,20 @@
     loading = true;
     error = null;
     data = null;
-    screenshotData = null;
+    // Clean up previous screenshot blob URL if it exists
+    if (screenshotUrl) {
+      URL.revokeObjectURL(screenshotUrl);
+      screenshotUrl = null;
+    }
 
     try {
       // kick off screenshot but don't block on it
       api
         .screenshot(url)
         .then((res) => {
-          screenshotData = res.data as ScreenshotResponse;
+          if (res.data) {
+            screenshotUrl = res.data as string;
+          }
         })
         .catch(() => {
           console.warn("Screenshot request failed");
@@ -292,7 +298,7 @@
     </style>
 
     <div class="mt-8" aria-live="polite">
-      <ResultSection {data} {loading} {error} {screenshotData} />
+      <ResultSection {data} {loading} {error} {screenshotUrl} />
     </div>
   </div>
 </section>
