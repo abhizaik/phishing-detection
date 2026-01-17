@@ -4,36 +4,31 @@ import (
 	"net/http"
 
 	"github.com/abhizaik/SafeSurf/internal/service/checks"
+	"github.com/abhizaik/SafeSurf/internal/service/screenshot"
 	"github.com/gin-gonic/gin"
 )
 
 func ScreenshotHandler(c *gin.Context) {
 	rawURL := c.Query("url")
 	if rawURL == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "success",
-			"msg":    "url query param is required",
-			"file":   "",
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "url query parameter is required"})
 		return
 	}
 
+	// Basic URL validation (additional validation happens in TakeScreenshot)
 	_, isValid, err := checks.IsValidURL(rawURL)
 	if err != nil || !isValid {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "success",
-			"msg":    "invalid url",
-			"file":   "",
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid URL"})
 		return
 	}
 
-	// filePath := screenshot.TakeScreenshot(rawURL)
+	imageBytes, err := screenshot.TakeScreenshot(rawURL)
+	if err != nil {
+		// Log error for debugging
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to capture screenshot"})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{
-		// "file":   filePath,
-		"msg":    "screenshot captured successfully",
-		"status": "success",
-	})
-	return
+	// Return the image as binary with proper content-type
+	c.Data(http.StatusOK, "image/png", imageBytes)
 }
