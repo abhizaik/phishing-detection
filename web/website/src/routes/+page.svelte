@@ -54,24 +54,24 @@
   $: isLanding = !data && !loading && !error;
 
   // Get current URL and domain for meta tags
-  let currentUrl = "";
-  let shareDomain = "";
-  let formattedInput = "";
-
-  $: if (browser) {
-    currentUrl = window.location.href;
-    if (data?.domain) {
-      shareDomain = data.domain;
-      formattedInput = formatUrlForShare(data.url || data.domain);
-    } else {
-      const params = new URLSearchParams(window.location.search);
-      const q = params.get("q");
-      if (q) {
-        shareDomain = getDomainFromUrl(formatUrl(q));
-        formattedInput = formatUrlForShare(q);
-      }
-    }
-  }
+  $: currentUrl = browser ? window.location.href : "";
+  $: queryParam = browser
+    ? (() => {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          return params.get("q") || "";
+        } catch {
+          return "";
+        }
+      })()
+    : "";
+  $: shareDomain = data?.domain || (queryParam ? getDomainFromUrl(formatUrl(queryParam)) : "");
+  $: inputUrl = data?.url || queryParam;
+  $: formattedInput = inputUrl
+    ? formatUrlForShare(inputUrl)
+    : shareDomain
+      ? formatUrlForShare(shareDomain)
+      : "";
 
   function buildScreenshotUrl(targetUrl: string): string | null {
     // If backend exposes screenshot, define pattern here later; placeholder for now
@@ -159,21 +159,39 @@
 </script>
 
 <svelte:head>
-  {#if shareDomain && currentUrl}
+  <title
+    >{shareDomain
+      ? `SafeSurf Scan Report - ${shareDomain}`
+      : "SafeSurf - Check if a link is safe"}</title
+  >
+  {#if shareDomain}
     <meta property="og:title" content="SafeSurf Phishing Scan Report" />
     <meta
       property="og:description"
-      content="Safe, shareable report for {formattedInput}. Do NOT click the input URL directly."
+      content={formattedInput
+        ? `Shareable report for ${formattedInput}. Do NOT click the input URL directly if you are unsure about legitimacy.`
+        : `Shareable report for ${shareDomain}. Do NOT click the input URL directly if you are unsure about legitimacy.`}
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content={currentUrl} />
-    <meta property="og:image" content="https://safesurf.vercel.app/assets/safesurf-logo.png" />
+    <meta property="og:url" content={currentUrl || "https://safesurf.vercel.app"} />
+    <meta property="og:image" content="https://safesurf.vercel.app/safesurf.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="SafeSurf Phishing Scan Report" />
+    <meta
+      name="twitter:description"
+      content={formattedInput
+        ? `Shareable report for ${formattedInput}. Do NOT click the input URL directly if you are unsure about legitimacy.`
+        : `Shareable report for ${shareDomain}. Do NOT click the input URL directly if you are unsure about legitimacy.`}
+    />
   {:else}
     <meta property="og:title" content="SafeSurf" />
     <meta property="og:description" content="Check if a link is safe." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={currentUrl || "https://safesurf.vercel.app"} />
-    <meta property="og:image" content="https://safesurf.vercel.app/assets/safesurf-logo.png" />
+    <meta property="og:image" content="https://safesurf.vercel.app/safesurf.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="SafeSurf" />
+    <meta name="twitter:description" content="Check if a link is safe." />
   {/if}
 </svelte:head>
 
