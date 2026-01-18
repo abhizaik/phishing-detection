@@ -157,7 +157,7 @@ func GenerateResult(resp Response) Result {
 		if resp.Analysis.RedirectionResult.HasDomainJump {
 			badReasons = append(badReasons, "Cross-domain redirection detected (destination differs from source).")
 			// Add the destination as a neutral fact so they can see where they are going
-			badReasons = append(badReasons, fmt.Sprintf("Final Destination: %s", resp.Analysis.RedirectionResult.FinalURLHost))
+			badReasons = append(badReasons, fmt.Sprintf("Final Destination: %s. Check Report for more info.", resp.Analysis.RedirectionResult.FinalURLHost))
 			riskScore += 50
 		}
 	}

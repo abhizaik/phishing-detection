@@ -2,6 +2,7 @@
   import { browser } from "$app/environment";
   import { onDestroy } from "svelte";
   import type { AnalyzeResult } from "../types";
+  import { formatUrlForShare } from "../utils";
   import TooltipIcon from "./TooltipIcon.svelte";
   export let data: AnalyzeResult | null = null;
   export let screenshotUrl: string | null = null;
@@ -42,6 +43,13 @@
     }
   }
 
+  function openAnalyzeInNewTab(url: string) {
+    if (!browser) return;
+    const analyzeUrl = new URL(window.location.origin);
+    analyzeUrl.searchParams.set("q", url);
+    window.open(analyzeUrl.toString(), "_blank");
+  }
+
   $: gridColumns = availableTabs.length > 0 ? `repeat(${availableTabs.length}, 1fr)` : "1fr";
 
   let copied = false;
@@ -69,7 +77,12 @@
 
     // Get current URL from address bar
     const currentUrl = window.location.href;
-    const shareText = `Check out this SafeSurf result for ${data?.domain}`;
+
+    // Format the input URL for safe sharing (strip schema, replace dots with [.])
+    const inputUrl = data?.url || data?.domain || "";
+    const formattedInput = formatUrlForShare(inputUrl);
+
+    const shareText = `🛡️ SafeSurf Scan Report\n\nReport for ${formattedInput} \n Report Link: ${currentUrl}`;
 
     if (navigator.share) {
       try {
@@ -85,7 +98,7 @@
         }
         // Fall through to clipboard copy
         try {
-          await navigator.clipboard.writeText(`${shareText}\n${currentUrl}`);
+          await navigator.clipboard.writeText(shareText);
           shareCopied = true;
           setTimeout(() => (shareCopied = false), 2000);
         } catch (clipboardErr) {
@@ -95,7 +108,7 @@
     } else {
       // Fallback to clipboard copy
       try {
-        await navigator.clipboard.writeText(`${shareText}\n${currentUrl}`);
+        await navigator.clipboard.writeText(shareText);
         shareCopied = true;
         setTimeout(() => (shareCopied = false), 2000);
       } catch (err) {
@@ -666,20 +679,47 @@
                       <div class="flex items-center gap-1 text-gray-400">
                         <span>Redirection Chain:</span>
                         <TooltipIcon
-                          text="A step-by-step list of all URLs in the redirection path. Warning icons highlight jumps to unexpected domains."
+                          text="A step-by-step list of all URLs in the redirection path. Warning icons highlight jumps to unexpected domains. Click any URL to analyze it in a new tab."
                         />
                       </div>
-                      <ul class="text-sm text-gray-100 list-none">
-                        {#each data.analysis.redirection_result.chain as url, index}
-                          <li class="break-all flex items-center gap-2 mb-1">
-                            <span class="text-gray-400">{index + 1}.</span>
-                            <span class="font-medium text-white">{url}</span>
-                            {#if url.includes(data.domain) === false}
-                              <span class="text-red-400 text-xs">⚠️</span>
-                            {/if}
-                          </li>
-                        {/each}
-                      </ul>
+
+                      {#if !data.analysis.redirection_result.has_domain_jump}
+                        <ul class="text-sm text-gray-100 list-none">
+                          {#each data.analysis.redirection_result.chain as url, index}
+                            <li class="break-all flex items-center gap-2 mb-1">
+                              <span class="text-gray-400">{index + 1}.</span>
+                              <span class="font-medium text-white">{url}</span>
+                              {#if url.includes(data.domain) === false}
+                                <span class="text-red-400 text-xs">⚠️</span>
+                              {/if}
+                            </li>
+                          {/each}
+                        </ul>
+                      {:else}
+                        <div class="flex flex-col gap-2">
+                          <p class="text-sm text-gray-300 italic">
+                            Click on the URLs to perform a safe scan on them
+                          </p>
+                          <ul class="text-sm text-gray-100 list-none">
+                            {#each data.analysis.redirection_result.chain as url, index}
+                              <li class="break-all flex items-center gap-2 mb-1">
+                                <span class="text-gray-400">{index + 1}.</span>
+                                <button
+                                  type="button"
+                                  class="font-medium text-blue-400 hover:text-blue-300 underline cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 rounded px-1 transition-colors"
+                                  on:click={() => openAnalyzeInNewTab(url)}
+                                  title="Click to analyze this URL in a new tab"
+                                >
+                                  {url}
+                                </button>
+                                {#if url.includes(data.domain) === false}
+                                  <span class="text-red-400 text-xs">⚠️</span>
+                                {/if}
+                              </li>
+                            {/each}
+                          </ul>
+                        </div>
+                      {/if}
                     </div>
                   {/if}
                 {/if}
