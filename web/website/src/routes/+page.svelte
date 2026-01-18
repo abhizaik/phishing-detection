@@ -1,10 +1,11 @@
 <script lang="ts">
+  import { browser } from "$app/environment";
   import { replaceState } from "$app/navigation";
   import { onMount } from "svelte";
   import { api } from "../lib/api";
   import ResultSection from "../lib/components/ResultSection.svelte";
   import type { AnalyzeResult } from "../lib/types";
-  import { formatUrl, isValidUrl } from "../lib/utils";
+  import { formatUrl, formatUrlForShare, getDomainFromUrl, isValidUrl } from "../lib/utils";
 
   let input = "";
   let loading = false;
@@ -51,6 +52,26 @@
   $: verdict = normalizeVerdict(data?.result?.verdict);
   $: accent = ACCENTS[verdict];
   $: isLanding = !data && !loading && !error;
+
+  // Get current URL and domain for meta tags
+  let currentUrl = "";
+  let shareDomain = "";
+  let formattedInput = "";
+
+  $: if (browser) {
+    currentUrl = window.location.href;
+    if (data?.domain) {
+      shareDomain = data.domain;
+      formattedInput = formatUrlForShare(data.url || data.domain);
+    } else {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("q");
+      if (q) {
+        shareDomain = getDomainFromUrl(formatUrl(q));
+        formattedInput = formatUrlForShare(q);
+      }
+    }
+  }
 
   function buildScreenshotUrl(targetUrl: string): string | null {
     // If backend exposes screenshot, define pattern here later; placeholder for now
@@ -136,6 +157,25 @@
     return () => window.removeEventListener("keydown", onKey);
   });
 </script>
+
+<svelte:head>
+  {#if shareDomain && currentUrl}
+    <meta property="og:title" content="SafeSurf Phishing Scan Report" />
+    <meta
+      property="og:description"
+      content="Safe, shareable report for {formattedInput}. Do NOT click the input URL directly."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={currentUrl} />
+    <meta property="og:image" content="https://safesurf.vercel.app/assets/safesurf-logo.png" />
+  {:else}
+    <meta property="og:title" content="SafeSurf" />
+    <meta property="og:description" content="Check if a link is safe." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={currentUrl || "https://safesurf.vercel.app"} />
+    <meta property="og:image" content="https://safesurf.vercel.app/assets/safesurf-logo.png" />
+  {/if}
+</svelte:head>
 
 <section>
   <title>SafeSurf</title>

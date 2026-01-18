@@ -32,3 +32,22 @@ export function formatDate(dateString: string): string {
     return dateString;
   }
 }
+
+/**
+ * Formats a URL for safe sharing by stripping schema and replacing dots with [.]
+ * Example: "https://example.com" -> "example[.]com"
+ */
+export function formatUrlForShare(url: string): string {
+  try {
+    // Remove schema (http://, https://)
+    let formatted = url.replace(/^https?:\/\//i, '');
+    // Remove trailing slash
+    formatted = formatted.replace(/\/$/, '');
+    // Replace dots with [.]
+    formatted = formatted.replace(/\./g, '[.]');
+    return formatted;
+  } catch {
+    // If parsing fails, just replace dots
+    return url.replace(/\./g, '[.]');
+  }
+}
