@@ -82,7 +82,7 @@
     const inputUrl = data?.url || data?.domain || "";
     const formattedInput = formatUrlForShare(inputUrl);
 
-    const shareText = `🛡️ SafeSurf Scan Report\n\nReport for ${formattedInput} \n Report Link: ${currentUrl}`;
+    const shareText = `🛡️ SafeSurf Scan Report\n\nReport for ${formattedInput}\nReport Link: ${currentUrl}`;
 
     if (navigator.share) {
       try {
