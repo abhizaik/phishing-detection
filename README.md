@@ -70,7 +70,8 @@ This engine fills that gap by providing:
 
 **Students & researchers**
 
-* Use a real-world, production-grade reference for **academic or security projects**
+* Use a real-world, production-grade reference for **academic or security projects**. Academic or research use of this project must cite this repository (see [CITATION.cff](CITATION.cff)).
+
 
 
 
@@ -144,7 +145,7 @@ curl -X GET http://localhost:8080/api/v1/analyze?url=https://example.com
 ```
 <details>
 <summary>Example API response</summary>
-```json
+ <pre><code class="language-json">
 {
     "url": "http://google.com/abhi",
     "domain": "google.com",
@@ -245,7 +246,7 @@ curl -X GET http://localhost:8080/api/v1/analyze?url=https://example.com
     "incomplete": false,
     "errors": null
 }
-```
+</code></pre>
 </details>
 
 ## Real-Time Performance

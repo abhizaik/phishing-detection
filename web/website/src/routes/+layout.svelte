@@ -44,7 +44,7 @@
           target="_blank"
           class="text-gray-300 hover:text-white transition-colors"
         >
-          abhizaik
+          Abhishek K P
         </a>
         {year}
       </p>

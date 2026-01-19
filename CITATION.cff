@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software in academic work, please cite it as below."
+title: "SafeSurf: Phishing Detection"
+type: software
+authors:
+  - family-names: K P
+    given-names: Abhishek
+repository-code: "https://github.com/abhizaik/phishing-detection"
+url: "https://github.com/abhizaik/phishing-detection"
+license: MIT
+keywords:
+  - phishing-detection
+  - cybersecurity
+  - machine-learning
+  - web-security
+abstract: >
+  SafeSurf is an open-source phishing domain detection system that analyzes URLs to identify malicious websites.
+  The project is intended for research, educational, and defensive security use.
+preferred-citation:
+  type: software
+  authors:
+    - family-names: K P
+      given-names: Abhishek
+  title: "SafeSurf: Phishing Detection"
+  year: 2024
+  url: "https://github.com/abhizaik/phishing-detection"
