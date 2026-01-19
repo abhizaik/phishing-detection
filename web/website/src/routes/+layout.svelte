@@ -38,15 +38,14 @@
         >
           MIT
         </a>
-        — ©
+        © 2023 – {year}
         <a
           href="https://abhizaik.com"
           target="_blank"
           class="text-gray-300 hover:text-white transition-colors"
         >
-          Abhishek K P
+          abhizaik
         </a>
-        {year}
       </p>
     </div>
   </footer>
