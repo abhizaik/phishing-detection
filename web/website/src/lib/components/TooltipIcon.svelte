@@ -2,7 +2,7 @@
   export let text: string;
 </script>
 
-<div class="relative inline-flex items-center group">
+<div class="relative inline-flex items-center group z-[99999]">
   <!-- Info icon -->
   <div
     class="w-4 h-4 flex items-center justify-center rounded-full
@@ -18,7 +18,7 @@
            opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0
            bg-gray-800 text-gray-100 text-xs px-3 py-1.5 rounded-lg shadow-lg
            border border-gray-700 transition-all duration-200 ease-out
-           pointer-events-none z-[9999] whitespace-normal"
+           pointer-events-none z-[99999] whitespace-normal"
   >
     {text}
     <div

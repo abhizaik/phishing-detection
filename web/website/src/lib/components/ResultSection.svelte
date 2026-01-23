@@ -387,7 +387,7 @@
         ? 'max-h-[5000px] opacity-100 mt-4 overflow-visible'
         : 'max-h-0 opacity-0 overflow-hidden'}"
     >
-      <div class="rounded-xl border border-gray-800 bg-gray-950 shadow-md overflow-hidden">
+      <div class="rounded-xl border border-gray-800 bg-gray-950 shadow-md overflow-visible">
         <!-- Tabs Navigation -->
         {#if availableTabs.length > 0}
           <div class="border-b border-gray-800 bg-gray-900/50">
