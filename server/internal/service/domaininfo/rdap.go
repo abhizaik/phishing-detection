@@ -1,6 +1,7 @@
 package domaininfo
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -28,7 +29,13 @@ type rdapResponse struct {
 }
 
 // fetchRDAP queries RDAP and returns normalized RegistrationData.
+// Deprecated: Use fetchRDAPWithContext instead.
 func fetchRDAP(domain string) (*RegistrationData, error) {
+	return fetchRDAPWithContext(context.Background(), domain)
+}
+
+// fetchRDAPWithContext queries RDAP with context support and timeout.
+func fetchRDAPWithContext(ctx context.Context, domain string) (*RegistrationData, error) {
 	tld := strings.Split(domain, ".")
 	if len(tld) < 2 {
 		return nil, fmt.Errorf("invalid domain")
@@ -45,7 +52,18 @@ func fetchRDAP(domain string) (*RegistrationData, error) {
 
 	url := fmt.Sprintf("%s/domain/%s", rdapURL, domain)
 
-	resp, err := http.Get(url)
+	// Create HTTP client with timeout to fail fast
+	client := &http.Client{
+		Timeout: 3 * time.Second, // Fast timeout for non-.com domains
+	}
+
+	// Create request with context
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("RDAP request creation failed: %w", err)
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("RDAP request failed: %w", err)
 	}

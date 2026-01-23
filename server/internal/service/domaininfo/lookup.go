@@ -1,13 +1,21 @@
 package domaininfo
 
 import (
+	"context"
+
 	"github.com/abhizaik/SafeSurf/internal/service/checks"
 )
 
 // Lookup tries RDAP first, falls back to WHOIS if RDAP fails.
+// Uses context for timeout/cancellation support.
 func Lookup(domain string) (*RegistrationData, error) {
-	// Try RDAP first
-	rdapData, err := fetchRDAP(domain)
+	return LookupWithContext(context.Background(), domain)
+}
+
+// LookupWithContext tries RDAP first with timeout, falls back to WHOIS if RDAP fails.
+func LookupWithContext(ctx context.Context, domain string) (*RegistrationData, error) {
+	// Try RDAP first with timeout
+	rdapData, err := fetchRDAPWithContext(ctx, domain)
 	if err == nil && rdapData != nil {
 		ageHuman, ageDays, err := checks.GetDomainAge(rdapData.CreatedDate)
 		if err != nil {
