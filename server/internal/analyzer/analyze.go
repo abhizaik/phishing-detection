@@ -11,8 +11,6 @@ import (
 
 // Analyze runs all tasks and builds the final response
 func Analyze(ctx context.Context, rawURL string) (Response, []error) {
-	start := time.Now()
-
 	// Validate and extract domain
 	_, isValid, _ := checks.IsValidURL(rawURL)
 	if !isValid {
@@ -54,6 +52,8 @@ func Analyze(ctx context.Context, rawURL string) (Response, []error) {
 		homoglyphTask{},
 	}
 
+	// Start timing right before tasks run
+	start := time.Now()
 	out, errs := runTasks(ctx, in, tasks)
 
 	resp := Response{

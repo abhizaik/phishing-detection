@@ -75,14 +75,21 @@
   async function shareLink() {
     if (!browser) return;
 
-    // Get current URL from address bar
     const currentUrl = window.location.href;
-
-    // Format the input URL for safe sharing (strip schema, replace dots with [.])
     const inputUrl = data?.url || data?.domain || "";
     const formattedInput = formatUrlForShare(inputUrl);
+    const shareText = `🛡️ SafeSurf Scan Result\n\nTarget: ${formattedInput}`;
+    const clipboardText = `${shareText}\nView Report: ${currentUrl}`;
 
-    const shareText = `🛡️ SafeSurf Scan Report\n\nReport for ${formattedInput}\nReport Link: ${currentUrl}`;
+    const copyToClipboard = async () => {
+      try {
+        await navigator.clipboard.writeText(clipboardText);
+        shareCopied = true;
+        setTimeout(() => (shareCopied = false), 2000);
+      } catch (err) {
+        console.error("Clipboard copy failed:", err);
+      }
+    };
 
     if (navigator.share) {
       try {
@@ -92,28 +99,14 @@
           url: currentUrl,
         });
       } catch (err: unknown) {
-        // User cancelled or share failed, fall back to clipboard
+        // User cancelled (AbortError) or share failed - fall back to clipboard
         if (err instanceof Error && err.name !== "AbortError") {
           console.error("Share failed:", err);
         }
-        // Fall through to clipboard copy
-        try {
-          await navigator.clipboard.writeText(shareText);
-          shareCopied = true;
-          setTimeout(() => (shareCopied = false), 2000);
-        } catch (clipboardErr) {
-          console.error("Clipboard copy failed:", clipboardErr);
-        }
+        await copyToClipboard();
       }
     } else {
-      // Fallback to clipboard copy
-      try {
-        await navigator.clipboard.writeText(shareText);
-        shareCopied = true;
-        setTimeout(() => (shareCopied = false), 2000);
-      } catch (err) {
-        console.error("Clipboard copy failed:", err);
-      }
+      await copyToClipboard();
     }
   }
 
@@ -394,7 +387,7 @@
         ? 'max-h-[5000px] opacity-100 mt-4 overflow-visible'
         : 'max-h-0 opacity-0 overflow-hidden'}"
     >
-      <div class="rounded-xl border border-gray-800 bg-gray-950 shadow-md overflow-hidden">
+      <div class="rounded-xl border border-gray-800 bg-gray-950 shadow-md overflow-visible">
         <!-- Tabs Navigation -->
         {#if availableTabs.length > 0}
           <div class="border-b border-gray-800 bg-gray-900/50">
