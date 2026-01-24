@@ -78,8 +78,8 @@
     const currentUrl = window.location.href;
     const inputUrl = data?.url || data?.domain || "";
     const formattedInput = formatUrlForShare(inputUrl);
-    const shareText = `🛡️ SafeSurf Scan Result\n\nTarget: ${formattedInput}`;
-    const clipboardText = `${shareText}\nView Report: ${currentUrl}`;
+    const shareText = `🛡️ SafeSurf Scan Result\n\nTarget: ${formattedInput}\nView Report: `;
+    const clipboardText = `${shareText}${currentUrl}`;
 
     const copyToClipboard = async () => {
       try {
