@@ -3,6 +3,7 @@ package handler
 import (
 	"time"
 
+	"github.com/abhizaik/SafeSurf/internal/handler/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +20,9 @@ func SetupRouter() *gin.Engine {
 		AllowCredentials: false,
 		MaxAge:           12 * time.Hour,
 	}))
+
+	// Global Rate Limiter: 20 requests per minute per IP
+	r.Use(middleware.RateLimiter(20, time.Minute))
 
 	// RootHandler returns basic info about the SafeSurf API service
 	r.GET("/", RootHandler)

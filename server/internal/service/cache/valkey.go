@@ -66,6 +66,16 @@ func (c *Cache) Delete(ctx context.Context, key string) error {
 	return c.client.Del(ctx, key).Err()
 }
 
+// Increment increments a key and returns the new value
+func (c *Cache) Increment(ctx context.Context, key string) (int64, error) {
+	return c.client.Incr(ctx, key).Result()
+}
+
+// Expire sets an expiration on a key
+func (c *Cache) Expire(ctx context.Context, key string, ttl time.Duration) error {
+	return c.client.Expire(ctx, key, ttl).Err()
+}
+
 // GetJSON retrieves a JSON value from cache and unmarshals it into the provided pointer
 func (c *Cache) GetJSON(ctx context.Context, key string, dest interface{}) error {
 	val, err := c.Get(ctx, key)
