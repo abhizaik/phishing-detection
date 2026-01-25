@@ -32,18 +32,28 @@ var (
 )
 
 // NewService creates a new screenshot service with a shared browser allocator
-func NewService() (*Service, error) {
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.NoSandbox,
-		chromedp.Headless,
-		chromedp.DisableGPU,
-		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
-	)
+func NewService(chromeURL string) (*Service, error) {
+	var allocCtx context.Context
+	var allocCancel context.CancelFunc
 
-	allocCtx, allocCancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	if chromeURL != "" {
+		// Use remote allocator for enhanced sandboxing (e.g., separate container)
+		log.Printf("Initializing remote screenshot service with URL: %s", chromeURL)
+		allocCtx, allocCancel = chromedp.NewRemoteAllocator(context.Background(), chromeURL)
+	} else {
+		// Fallback to local allocator
+		log.Println("Initializing local screenshot service")
+		opts := append(chromedp.DefaultExecAllocatorOptions[:],
+			chromedp.NoSandbox,
+			chromedp.Headless,
+			chromedp.DisableGPU,
+			chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+		)
+		allocCtx, allocCancel = chromedp.NewExecAllocator(context.Background(), opts...)
+	}
 
 	service := &Service{
-		allocCtx: allocCtx,
+		allocCtx:    allocCtx,
 		allocCancel: allocCancel,
 		initialized: true,
 	}
@@ -55,7 +65,8 @@ func NewService() (*Service, error) {
 func GetService() (*Service, error) {
 	var err error
 	serviceOnce.Do(func() {
-		defaultService, err = NewService()
+		chromeURL := os.Getenv("CHROME_URL")
+		defaultService, err = NewService(chromeURL)
 	})
 	return defaultService, err
 }
@@ -268,7 +279,8 @@ func TakeScreenshot(rawURL string) ([]byte, error) {
 func TakeScreenshotAndSave(url string) string {
 	buf, err := TakeScreenshot(url)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error taking screenshot: %v", err)
+		return ""
 	}
 
 	timestamp := time.Now().Format("20060102-150405")
@@ -277,12 +289,14 @@ func TakeScreenshotAndSave(url string) string {
 	dir := filepath.Join(".", "tmp", "screenshots") // ./server/tmp/screenshots
 
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-		log.Fatal(err)
+		log.Printf("Error creating screenshots directory: %v", err)
+		return ""
 	}
 	fullPath := filepath.Join(dir, filename)
 
 	if err := os.WriteFile(fullPath, buf, 0644); err != nil {
-		log.Fatal(err)
+		log.Printf("Error writing screenshot file: %v", err)
+		return ""
 	}
 
 	fmt.Println("Screenshot saved")
