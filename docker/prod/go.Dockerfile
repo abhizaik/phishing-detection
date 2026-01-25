@@ -24,14 +24,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o safesurf ./cmd/safesur
 # ============================
 FROM alpine:latest
 
-# Install Chromium & dependencies for headless browser
+# Basic dependencies only (timezone, certificates)
 RUN apk add --no-cache \
-    chromium \
-    chromium-chromedriver \
-    nss \
-    freetype \
-    harfbuzz \
-    ttf-dejavu \
     ca-certificates \
     tzdata
 
@@ -46,8 +40,5 @@ COPY --from=builder /app/.env ./.env
 
 ENV PORT=8080
 EXPOSE 8080
-
-# Chromium default path used by many libraries (Playwright/Puppeteer style)
-ENV CHROME_PATH=/usr/bin/chromium-browser
 
 CMD ["./safesurf"]
