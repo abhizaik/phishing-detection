@@ -29,6 +29,7 @@ type SSLCertResult struct {
 }
 
 // Example blacklist of SHA256 cert fingerprints (hex, uppercase)
+// Move to const dir and add more data from https://github.com/BishopFox/badcerts or abuse.ch
 var knownBadFingerprints = map[string]struct{}{
 	"DEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEF": {},
 }
@@ -104,43 +105,22 @@ func AnalyzeSSLCert(domain string) SSLCertResult {
 		res.Reasons = append(res.Reasons, "unusually long validity period")
 	}
 
-	// stub CT check (replace with real CT API lookup)
-	if fakeCheckCTLogs(cert) {
-		res.CTLogged = true
-	} else {
-		res.CTLogged = false
+	// Check for embedded Certificate Transparency (CT) SCTs
+	// OID 1.3.6.1.4.1.11129.2.4.2 is for embedded SCTs
+	// This feature is incomplete, needs to be implemented, removing from UI for now.
+	res.CTLogged = false
+	for _, ext := range cert.Extensions {
+		if ext.Id.String() == "1.3.6.1.4.1.11129.2.4.2" {
+			res.CTLogged = true
+			break
+		}
+	}
+
+	if !res.CTLogged {
 		res.IsSuspicious = true
-		res.Reasons = append(res.Reasons, "certificate not found in CT logs (stubbed)")
+		res.Reasons = append(res.Reasons, "certificate does not contain embedded CT logs (SCTs)")
 	}
 
 	return res
 }
 
-// fakeCheckCTLogs simulates a CT log lookup
-func fakeCheckCTLogs(cert *x509.Certificate) bool {
-	// Replace with real CT query against Google/Cloudflare logs
-	// e.g., using crt.sh API or CertSpotter API
-	return false // default: not found
-}
-
-// Example runner
-func SSLMain() {
-	tests := []string{
-		"google.com",
-		"expired.badssl.com",
-	}
-
-	for _, d := range tests {
-		r := AnalyzeSSLCert(d)
-		fmt.Printf("Domain: %s\n", r.Domain)
-		fmt.Printf(" HasTLS: %v ChainValid: %v Issuer: %s\n", r.HasTLS, r.ChainValid, r.Issuer)
-		fmt.Printf(" NotBefore: %v NotAfter: %v AgeDays: %d\n", r.NotBefore, r.NotAfter, r.AgeDays)
-		fmt.Printf(" Fingerprint: %s\n", r.Fingerprint)
-		fmt.Printf(" CTLogged: %v KnownBadChain: %v\n", r.CTLogged, r.KnownBadChain)
-		fmt.Printf(" Suspicious: %v\n", r.IsSuspicious)
-		if len(r.Reasons) > 0 {
-			fmt.Printf(" Reasons: %v\n", r.Reasons)
-		}
-		fmt.Println(strings.Repeat("-", 60))
-	}
-}

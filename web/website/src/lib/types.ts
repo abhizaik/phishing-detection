@@ -22,8 +22,84 @@ export interface AnalyzeResult {
   infrastructure?: any;
   domain_info?: any;
   performance?: any;
+  ssl_info?: SSLInfo;
+  tls_info?: TLSInfo;
+  content_data?: ContentData;
+  domain_randomness?: DomainRandomness;
+  threat_intel?: ThreatIntel;
   incomplete?: boolean;
   errors?: any;
+}
+
+export interface SSLInfo {
+  Domain: string;
+  HasTLS: boolean;
+  ChainValid: boolean;
+  Issuer: string;
+  NotBefore: string;
+  NotAfter: string;
+  AgeDays: number;
+  Fingerprint: string;
+  IsSuspicious: boolean;
+  Reasons: string[];
+  CTLogged: boolean;
+  KnownBadChain: boolean;
+}
+
+export interface TLSInfo {
+  Present: boolean;
+  Issuer: string;
+  AgeDays: number;
+  HostnameMismatch: boolean;
+}
+
+export interface ContentData {
+  url: string;
+  title: string;
+  has_forms: boolean;
+  has_login_form: boolean;
+  has_payment_form: boolean;
+  has_personal_form: boolean;
+  form_count: number;
+  fetch_duration: number;
+  forms?: Array<{
+    action: string;
+    method: string;
+    inputs: string[];
+    has_password: boolean;
+    has_user_like: boolean;
+    has_payment: boolean;
+    has_personal: boolean;
+    submit_texts: string[];
+    is_external: boolean;
+    is_hidden: boolean;
+  }>;
+  iframes?: Array<{
+    src: string;
+    is_hidden: boolean;
+    width: string;
+    height: string;
+  }>;
+  has_hidden_iframe: boolean;
+  has_tracking: boolean;
+  brand_check?: {
+    brand_found: string;
+    is_mismatch: boolean;
+    detected_names: string[];
+  };
+}
+
+export interface DomainRandomness {
+  entropy: number;
+}
+
+export interface ThreatIntel {
+  phishtank?: {
+    in_database: boolean;
+    verified: boolean;
+    is_online: boolean;
+    target: string;
+  };
 }
 
 export interface ScreenshotResponse {

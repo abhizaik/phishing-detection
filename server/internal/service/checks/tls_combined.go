@@ -129,13 +129,19 @@ func CheckTLSCombined(domain string) (CombinedTLSResult, error) {
 		result.SSLInfo.Reasons = append(result.SSLInfo.Reasons, "unusually long validity period")
 	}
 
-	// Stub CT check (replace with real CT API lookup)
-	if fakeCheckCTLogs(cert) {
-		result.SSLInfo.CTLogged = true
-	} else {
-		result.SSLInfo.CTLogged = false
+	// Check for embedded Certificate Transparency (CT) SCTs
+	// OID 1.3.6.1.4.1.11129.2.4.2 is for embedded SCTs
+	result.SSLInfo.CTLogged = false
+	for _, ext := range cert.Extensions {
+		if ext.Id.String() == "1.3.6.1.4.1.11129.2.4.2" {
+			result.SSLInfo.CTLogged = true
+			break
+		}
+	}
+
+	if !result.SSLInfo.CTLogged {
 		result.SSLInfo.IsSuspicious = true
-		result.SSLInfo.Reasons = append(result.SSLInfo.Reasons, "certificate not found in CT logs (stubbed)")
+		result.SSLInfo.Reasons = append(result.SSLInfo.Reasons, "certificate does not contain embedded CT logs (SCTs)")
 	}
 
 	return result, nil

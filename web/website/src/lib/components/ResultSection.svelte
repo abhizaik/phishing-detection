@@ -22,8 +22,21 @@
 
   // Available tabs based on data
   $: availableTabs = [
+    {
+      id: "threat",
+      label: "Threat Intel",
+      icon: "🛡️",
+      condition: data?.threat_intel?.phishtank?.in_database,
+    },
     { id: "domain", label: "Domain Info", icon: "🏷️", condition: data?.domain_info },
     { id: "analysis", label: "Redirection", icon: "🔀", condition: data?.analysis },
+    {
+      id: "security",
+      label: "Security/SSL",
+      icon: "🔒",
+      condition: data?.ssl_info || data?.tls_info,
+    },
+    { id: "content", label: "Page Content", icon: "📄", condition: data?.content_data },
     { id: "features", label: "URL Signals", icon: "📡", condition: data?.features },
     {
       id: "infrastructure",
@@ -384,7 +397,7 @@
     <div
       id="advanced-panel"
       class="transition-all duration-500 ease-in-out {showAdvanced
-        ? 'max-h-[5000px] opacity-100 mt-4 overflow-visible'
+        ? 'max-h-[50000px] opacity-100 mt-4 overflow-visible'
         : 'max-h-0 opacity-0 overflow-hidden'}"
     >
       <div class="rounded-xl border border-gray-800 bg-gray-950 shadow-md overflow-visible">
@@ -411,6 +424,66 @@
 
         <!-- All Content - Continuous Scroll -->
         <div class="p-6 space-y-6">
+          <!-- Threat Intelligence Section -->
+          {#if data?.threat_intel?.phishtank?.in_database}
+            <section
+              id="section-threat"
+              class="bg-gray-900/80 border border-gray-800 rounded-lg p-5 shadow-md hover:shadow-lg hover:scale-[1.01] transition-all scroll-mt-20"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-semibold text-white">Threat Intelligence</h3>
+                <span
+                  class="text-[10px] text-gray-400 uppercase tracking-wide px-2 py-0.5 bg-gray-800 rounded"
+                  >External Feeds</span
+                >
+              </div>
+
+              <div class="space-y-4">
+                <div class="p-4 rounded-lg bg-gray-800/50 border border-gray-700">
+                  <div class="flex items-center gap-3 mb-2">
+                    <img src="https://phishtank.com/favicon.ico" alt="" class="w-4 h-4" />
+                    <h4 class="text-sm font-medium text-white">PhishTank Result</h4>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                    <div
+                      class="flex justify-between md:justify-start md:gap-4 border-b border-gray-700/50 pb-1"
+                    >
+                      <span class="text-gray-400">Status:</span>
+                      {#if data.threat_intel.phishtank.verified}
+                        <span class="text-red-400 font-semibold">Verified Phishing</span>
+                      {:else}
+                        <span class="text-yellow-400 font-semibold">Suspected</span>
+                      {/if}
+                    </div>
+                    <div
+                      class="flex justify-between md:justify-start md:gap-4 border-b border-gray-700/50 pb-1"
+                    >
+                      <span class="text-gray-400">Online:</span>
+                      <span
+                        class={data.threat_intel.phishtank.is_online
+                          ? "text-red-400"
+                          : "text-gray-400"}
+                      >
+                        {data.threat_intel.phishtank.is_online ? "Yes" : "No"}
+                      </span>
+                    </div>
+                    {#if data.threat_intel.phishtank.target}
+                      <div
+                        class="flex justify-between md:justify-start md:gap-4 border-b border-gray-700/50 pb-1 md:col-span-2"
+                      >
+                        <span class="text-gray-400">Reported Target:</span>
+                        <span class="text-white font-medium"
+                          >{data.threat_intel.phishtank.target}</span
+                        >
+                      </div>
+                    {/if}
+                  </div>
+                </div>
+              </div>
+            </section>
+          {/if}
+
           <!-- Domain Info Section -->
           {#if data?.domain_info}
             <section
@@ -770,6 +843,622 @@
             </section>
           {/if}
 
+          <!-- Security Section -->
+          {#if data?.ssl_info || data?.tls_info}
+            <section
+              id="section-security"
+              class="bg-gray-900/80 border border-gray-800 rounded-lg p-5 shadow-md hover:shadow-lg hover:scale-[1.01] transition-all scroll-mt-20"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-semibold text-white">Security & Encryption</h3>
+                <span
+                  class="text-[10px] text-gray-400 uppercase tracking-wide px-2 py-0.5 bg-gray-800 rounded"
+                  >SSL / TLS</span
+                >
+              </div>
+
+              <div
+                class="space-y-0 divide-y divide-gray-800 text-sm text-gray-200 max-w-4xl w-full mx-auto"
+              >
+                <!-- SSL Info -->
+                {#if data.ssl_info}
+                  <div
+                    class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0"
+                  >
+                    <div class="flex items-center gap-1 text-gray-400">
+                      <span>SSL Support:</span>
+                      <TooltipIcon
+                        text="Checks if the website supports secure HTTPS connections."
+                      />
+                    </div>
+                    {#if data.ssl_info.HasTLS}
+                      <span class="text-green-400 font-medium flex items-center gap-1"
+                        >✅ Enabled</span
+                      >
+                    {:else}
+                      <span class="text-red-400 font-medium flex items-center gap-1"
+                        >❌ Disabled</span
+                      >
+                    {/if}
+                  </div>
+
+                  {#if data.ssl_info.HasTLS}
+                    <div
+                      class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                    >
+                      <div class="flex items-center gap-1 text-gray-400">
+                        <span>Certificate Chain:</span>
+                        <TooltipIcon
+                          text="Verifies if the SSL certificate is issued by a trusted authority and the full chain is valid."
+                        />
+                      </div>
+                      {#if data.ssl_info.ChainValid}
+                        <span class="text-green-400 font-medium flex items-center gap-1"
+                          >✅ Valid</span
+                        >
+                      {:else}
+                        <span class="text-red-400 font-medium flex items-center gap-1"
+                          >❌ Invalid / Self-signed</span
+                        >
+                      {/if}
+                    </div>
+
+                    <div
+                      class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                    >
+                      <div class="flex items-center gap-1 text-gray-400">
+                        <span>Certificate Issuer:</span>
+                        <TooltipIcon text="The organization that issued the SSL certificate." />
+                      </div>
+                      <span class="font-medium text-white">{data.ssl_info.Issuer || "-"}</span>
+                    </div>
+
+                    <div
+                      class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                    >
+                      <div class="flex items-center gap-1 text-gray-400">
+                        <span>Certificate Age:</span>
+                        <TooltipIcon
+                          text="How many days ago the certificate was issued. Recently issued certificates on new domains can be suspicious."
+                        />
+                      </div>
+                      <span class="font-medium text-white">{data.ssl_info.AgeDays} days</span>
+                    </div>
+
+                    <div
+                      class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                    >
+                      <div class="flex items-center gap-1 text-gray-400">
+                        <span>Valid From:</span>
+                        <TooltipIcon text="The date this certificate first became active." />
+                      </div>
+                      <span class="font-medium text-white">{data.ssl_info.NotBefore}</span>
+                    </div>
+
+                    <div
+                      class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                    >
+                      <div class="flex items-center gap-1 text-gray-400">
+                        <span>Expiry Date:</span>
+                        <TooltipIcon text="When the current SSL certificate will expire." />
+                      </div>
+                      <span class="font-medium text-white">{data.ssl_info.NotAfter}</span>
+                    </div>
+
+                    <!-- This feature is incomplete, needs to be implemented, removing from UI for now. -->
+                    <!-- <div
+                      class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                    >
+                      <div class="flex items-center gap-1 text-gray-400">
+                        <span>Malicious Authority Check:</span>
+                        <TooltipIcon
+                          text="Checks if the certificate belongs to a known malicious or blacklisted authority."
+                        />
+                      </div>
+                      {#if !data.ssl_info.KnownBadChain}
+                        <span class="text-green-400 font-medium flex items-center gap-1"
+                          >✅ Clean</span
+                        >
+                      {:else}
+                        <span class="text-red-400 font-medium flex items-center gap-1"
+                          >❌ Blacklisted Authority</span
+                        >
+                      {/if}
+                    </div> -->
+
+                    <div
+                      class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                    >
+                      <div class="flex items-center gap-1 text-gray-400">
+                        <span>Certificate Risk Level:</span>
+                        <TooltipIcon
+                          text="Overall assessment of the certificate's technical integrity."
+                        />
+                      </div>
+                      {#if !data.ssl_info.IsSuspicious}
+                        <span class="text-green-400 font-medium flex items-center gap-1"
+                          >✅ Low Risk</span
+                        >
+                      {:else}
+                        <span class="text-yellow-400 font-medium flex items-center gap-1"
+                          >⚠️ Suspicious</span
+                        >
+                      {/if}
+                    </div>
+
+                    {#if data.ssl_info.Reasons && data.ssl_info.Reasons.length > 0}
+                      <div
+                        class="flex flex-col md:grid md:grid-cols-[350px,1fr] gap-2 md:gap-4 py-2"
+                      >
+                        <div class="flex items-center gap-1 text-gray-400">
+                          <span>Technical Warnings:</span>
+                          <TooltipIcon
+                            text="Specific technical reasons why this certificate is flagged."
+                          />
+                        </div>
+                        <ul class="text-xs text-yellow-400 list-disc list-inside">
+                          {#each data.ssl_info.Reasons as reason}
+                            <li>{reason}</li>
+                          {/each}
+                        </ul>
+                      </div>
+                    {/if}
+
+                    <!-- <div
+                      class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                    >
+                      <div class="flex items-center gap-1 text-gray-400">
+                        <span>CT Log Status:</span>
+                        <TooltipIcon
+                          text="Certificate Transparency (CT) logs help detect mis-issued or fraudulent certificates."
+                        />
+                      </div>
+                      {#if data.ssl_info.CTLogged}
+                        <span class="text-green-400 font-medium flex items-center gap-1"
+                          >✅ Logged</span
+                        >
+                      {:else}
+                        <span class="text-red-400 font-medium flex items-center gap-1"
+                          >❌ Not Detected</span
+                        >
+                      {/if}
+                    </div> -->
+
+                    <div
+                      class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                    >
+                      <div class="flex items-center gap-1 text-gray-400">
+                        <span>Certificate Fingerprint:</span>
+                        <TooltipIcon
+                          text="A unique identifier (SHA-256 hash) for this specific certificate."
+                        />
+                      </div>
+                      <span class="font-mono text-[12px] text-gray-300 break-all"
+                        >{data.ssl_info.Fingerprint}</span
+                      >
+                    </div>
+                  {/if}
+                {/if}
+
+                <!-- TLS Connection Info -->
+                {#if data.tls_info}
+                  <div
+                    class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                  >
+                    <div class="flex items-center gap-1 text-gray-400">
+                      <span>TLS Issuer (Connection):</span>
+                      <TooltipIcon
+                        text="The certificate issuer detected during the live connection."
+                      />
+                    </div>
+                    <span class="font-medium text-white">{data.tls_info.Issuer || "-"}</span>
+                  </div>
+
+                  <div
+                    class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 last:pb-0"
+                  >
+                    <div class="flex items-center gap-1 text-gray-400">
+                      <span>Hostname Match:</span>
+                      <TooltipIcon
+                        text="Ensures the certificate is actually issued for the domain you are visiting."
+                      />
+                    </div>
+                    {#if !data.tls_info.HostnameMismatch}
+                      <span class="text-green-400 font-medium flex items-center gap-1"
+                        >✅ Match</span
+                      >
+                    {:else}
+                      <span class="text-red-400 font-medium flex items-center gap-1"
+                        >❌ Mismatch</span
+                      >
+                    {/if}
+                  </div>
+                {/if}
+              </div>
+            </section>
+          {/if}
+
+          <!-- Content Section -->
+          {#if data?.content_data}
+            <section
+              id="section-content"
+              class="bg-gray-900/80 border border-gray-800 rounded-lg p-5 shadow-md hover:shadow-lg hover:scale-[1.01] transition-all scroll-mt-20"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-semibold text-white">Page Content Analysis</h3>
+                <span
+                  class="text-[10px] text-gray-400 uppercase tracking-wide px-2 py-0.5 bg-gray-800 rounded"
+                  >DOM Analysis</span
+                >
+              </div>
+
+              <div
+                class="space-y-0 divide-y divide-gray-800 text-sm text-gray-200 max-w-4xl w-full mx-auto"
+              >
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Page Title:</span>
+                    <TooltipIcon text="The title of the page as defined in the HTML <title> tag." />
+                  </div>
+                  <span class="font-medium text-white"
+                    >{data.content_data.title || "(No Title)"}</span
+                  >
+                </div>
+
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Brand Verification:</span>
+                    <TooltipIcon
+                      text="Checks if the page content matches well-known brands and verifies if it's hosted on an official domain."
+                    />
+                  </div>
+                  {#if data.content_data.brand_check?.is_mismatch}
+                    <span class="text-red-400 font-medium flex items-center gap-1">
+                      ❌ Brand Mismatch ({data.content_data.brand_check.brand_found})
+                    </span>
+                  {:else}
+                    <span class="text-green-400 font-medium flex items-center gap-1">
+                      ✅ {data.content_data.brand_check?.detected_names?.length
+                        ? "Verified Brands: " +
+                          data.content_data.brand_check.detected_names.join(", ")
+                        : "No high-value brands detected"}
+                    </span>
+                  {/if}
+                </div>
+
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Forms Detected:</span>
+                    <TooltipIcon text="Total number of HTML forms found on the page." />
+                  </div>
+                  <span class="font-medium text-white">{data.content_data.form_count}</span>
+                </div>
+
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Login Form Presence:</span>
+                    <TooltipIcon
+                      text="Checks if any forms appear to be for logging in (contain password or username-like fields)."
+                    />
+                  </div>
+                  {#if data.content_data.has_login_form}
+                    <span class="text-red-400 font-medium flex items-center gap-1">Detected</span>
+                  {:else}
+                    <span class="text-green-400 font-medium flex items-center gap-1"
+                      >None Detected</span
+                    >
+                  {/if}
+                </div>
+
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Payment Form Presence:</span>
+                    <TooltipIcon
+                      text="Checks if any forms appear to be for payments (contain credit card, CVV, or billing fields)."
+                    />
+                  </div>
+                  {#if data.content_data.has_payment_form}
+                    <span class="text-red-400 font-medium flex items-center gap-1">Detected</span>
+                  {:else}
+                    <span class="text-green-400 font-medium flex items-center gap-1"
+                      >None Detected</span
+                    >
+                  {/if}
+                </div>
+
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Personal Info Collection:</span>
+                    <TooltipIcon
+                      text="Checks if any forms request sensitive personal info like address, phone, or SSN."
+                    />
+                  </div>
+                  {#if data.content_data.has_personal_form}
+                    <span class="text-red-400 font-medium flex items-center gap-1">Detected</span>
+                  {:else}
+                    <span class="text-green-400 font-medium flex items-center gap-1"
+                      >None Detected</span
+                    >
+                  {/if}
+                </div>
+
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Hidden Elements:</span>
+                    <TooltipIcon
+                      text="Detects forms or iframes that are hidden from view, which can be used for malicious background activities."
+                    />
+                  </div>
+                  {#if data.content_data.has_hidden_iframe || data.content_data.forms?.some((f) => f.is_hidden)}
+                    <span class="text-red-400 font-medium flex items-center gap-1">
+                      ⚠️ {data.content_data.has_hidden_iframe ? "Hidden Iframe" : ""}
+                      {data.content_data.has_hidden_iframe &&
+                      data.content_data.forms?.some((f) => f.is_hidden)
+                        ? "&"
+                        : ""}
+                      {data.content_data.forms?.some((f) => f.is_hidden) ? "Hidden Form" : ""} Detected
+                    </span>
+                  {:else}
+                    <span class="text-green-400 font-medium flex items-center gap-1"
+                      >None Detected</span
+                    >
+                  {/if}
+                </div>
+
+                <div
+                  class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2"
+                >
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <span>Tracking Beacons:</span>
+                    <TooltipIcon
+                      text="Detects 1x1 or 0x0 pixel images used for background tracking or verifying email opens."
+                    />
+                  </div>
+                  {#if data.content_data.has_tracking}
+                    <span class="text-yellow-400 font-medium flex items-center gap-1">Detected</span
+                    >
+                  {:else}
+                    <span class="text-green-400 font-medium flex items-center gap-1"
+                      >None Detected</span
+                    >
+                  {/if}
+                </div>
+
+                {#if data.content_data.forms && data.content_data.forms.length > 0}
+                  <div class="py-4 last:pb-0">
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+                      Detailed Form Technicals
+                    </h4>
+                    <div class="space-y-8">
+                      {#each data.content_data.forms as form, i}
+                        <div
+                          class="space-y-0 divide-y divide-gray-800 border border-gray-800 rounded-lg bg-gray-900/40"
+                        >
+                          <div
+                            class="bg-gray-800/60 px-4 py-2 border-b border-gray-800 flex justify-between items-center rounded-t-lg"
+                          >
+                            <span class="text-xs font-bold text-blue-400 uppercase"
+                              >Form #{i + 1}</span
+                            >
+                          </div>
+
+                          <div
+                            class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 px-4 py-2"
+                          >
+                            <div class="flex items-center gap-1 text-gray-400">
+                              <span>Submission Method:</span>
+                              <TooltipIcon
+                                text="The HTTP method used to send data (POST is standard, GET can leak data in URLs)."
+                              />
+                            </div>
+                            <span class="font-mono text-gray-200 uppercase">{form.method}</span>
+                          </div>
+
+                          <div
+                            class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 px-4 py-2"
+                          >
+                            <div class="flex items-center gap-1 text-gray-400">
+                              <span>Submission Endpoint:</span>
+                              <TooltipIcon
+                                text="The destination URL where the form data will be sent."
+                              />
+                            </div>
+                            <span class="font-mono text-white break-all"
+                              >{form.action || "(Current Page)"}</span
+                            >
+                          </div>
+
+                          <div
+                            class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 px-4 py-2"
+                          >
+                            <div class="flex items-center gap-1 text-gray-400">
+                              <span>Data Flow:</span>
+                              <TooltipIcon
+                                text="Checks if data is being sent to the same website or an external/unrelated domain."
+                              />
+                            </div>
+                            {#if form.is_external}
+                              <span class="text-red-400 font-medium"
+                                >⚠️ Submits to External Domain</span
+                              >
+                            {:else}
+                              <span class="text-green-400 font-medium"
+                                >✅ Submits to Same Domain</span
+                              >
+                            {/if}
+                          </div>
+
+                          <div
+                            class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 px-4 py-2"
+                          >
+                            <div class="flex items-center gap-1 text-gray-400">
+                              <span>Security Analysis:</span>
+                              <TooltipIcon
+                                text="Automated check for suspicious form properties or sensitive data collection."
+                              />
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                              {#if !form.has_password && !form.has_user_like && !form.has_payment && !form.has_personal && !form.is_hidden}
+                                <span class="text-gray-400 italic">No sensitive flags detected</span
+                                >
+                              {/if}
+                              {#if form.is_hidden}
+                                <span class="text-red-400 font-bold">👻 HIDDEN FORM</span>
+                              {/if}
+                              {#if form.has_password}
+                                <span class="text-yellow-400 flex items-center gap-1"
+                                  >🔒 Collects Passwords</span
+                                >
+                              {/if}
+                              {#if form.has_user_like}
+                                <span class="text-blue-400 flex items-center gap-1"
+                                  >👤 Identity Fields</span
+                                >
+                              {/if}
+                              {#if form.has_payment}
+                                <span class="text-red-400 flex items-center gap-1"
+                                  >💳 Payment Data</span
+                                >
+                              {/if}
+                              {#if form.has_personal}
+                                <span class="text-orange-400 flex items-center gap-1"
+                                  >🏠 Personal Info</span
+                                >
+                              {/if}
+                            </div>
+                          </div>
+
+                          {#if form.inputs && form.inputs.length > 0}
+                            <div
+                              class="flex flex-col md:grid md:grid-cols-[350px,1fr] gap-2 md:gap-4 px-4 py-2"
+                            >
+                              <div class="flex items-center gap-1 text-gray-400">
+                                <span>Detected Data Fields:</span>
+                                <TooltipIcon
+                                  text="Full technical map of input fields found within this form."
+                                />
+                              </div>
+                              <div class="flex flex-col gap-1.5">
+                                {#each form.inputs as input}
+                                  <span
+                                    class="text-[11px] text-gray-300 font-mono bg-gray-800/50 px-2 py-1 rounded border border-gray-700/30 break-all"
+                                  >
+                                    {input}
+                                  </span>
+                                {/each}
+                              </div>
+                            </div>
+                          {/if}
+
+                          {#if form.submit_texts && form.submit_texts.length > 0}
+                            <div
+                              class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 px-4 py-2"
+                            >
+                              <div class="flex items-center gap-1 text-gray-400">
+                                <span>Submission Buttons:</span>
+                                <TooltipIcon
+                                  text="The text labels on buttons that trigger this form's submission."
+                                />
+                              </div>
+                              <div class="flex flex-wrap gap-1">
+                                {#each form.submit_texts as text}
+                                  <span
+                                    class="px-2 py-0.5 bg-gray-900 text-emerald-400 rounded border border-emerald-900/30 text-xs font-medium"
+                                  >
+                                    {text}
+                                  </span>
+                                {/each}
+                              </div>
+                            </div>
+                          {/if}
+                        </div>
+                      {/each}
+                    </div>
+                  </div>
+                {/if}
+
+                {#if data.content_data.iframes && data.content_data.iframes.length > 0}
+                  <div class="py-4 last:pb-0">
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+                      Iframe & Third-Party Elements
+                    </h4>
+                    <div class="space-y-8">
+                      {#each data.content_data.iframes as iframe, i}
+                        <div
+                          class="space-y-0 divide-y divide-gray-800 border border-gray-800 rounded-lg bg-gray-900/40"
+                        >
+                          <div
+                            class="bg-gray-800/60 px-4 py-2 border-b border-gray-800 flex justify-between items-center rounded-t-lg"
+                          >
+                            <span class="text-xs font-bold text-purple-400 uppercase"
+                              >Iframe #{i + 1}</span
+                            >
+                          </div>
+
+                          <div
+                            class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 px-4 py-2"
+                          >
+                            <div class="flex items-center gap-1 text-gray-400">
+                              <span>Visibility Status:</span>
+                              <TooltipIcon
+                                text="Indicates if the iframe is visible to the user or hidden in the background."
+                              />
+                            </div>
+                            {#if iframe.is_hidden}
+                              <span class="text-red-400 font-bold flex items-center gap-1"
+                                >👻 Hidden</span
+                              >
+                            {:else}
+                              <span class="text-gray-400 font-medium">Visible</span>
+                            {/if}
+                          </div>
+
+                          <div
+                            class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 px-4 py-2"
+                          >
+                            <div class="flex items-center gap-1 text-gray-400">
+                              <span>Source (URL):</span>
+                              <TooltipIcon text="The external URL being loaded into this iframe." />
+                            </div>
+                            <span class="font-mono text-white break-all"
+                              >{iframe.src || "(No Source)"}</span
+                            >
+                          </div>
+
+                          <div
+                            class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 px-4 py-2"
+                          >
+                            <div class="flex items-center gap-1 text-gray-400">
+                              <span>Dimensions:</span>
+                              <TooltipIcon text="The width and height of the iframe element." />
+                            </div>
+                            <span class="text-gray-300 font-mono">
+                              {iframe.width || "auto"} x {iframe.height || "auto"}
+                            </span>
+                          </div>
+                        </div>
+                      {/each}
+                    </div>
+                  </div>
+                {/if}
+              </div>
+            </section>
+          {/if}
+
           <!-- Features Section -->
           {#if data?.features}
             <section
@@ -780,7 +1469,7 @@
                 <h3 class="text-base font-semibold text-white">URL Signals</h3>
                 <span
                   class="text-[10px] text-gray-400 uppercase tracking-wide px-2 py-0.5 bg-gray-800 rounded"
-                  >URL + TLD</span
+                  >URL / TLD</span
                 >
               </div>
 
@@ -956,6 +1645,29 @@
                       />
                     </div>
                     <span class="font-medium text-white">{data.features.url.subdomain_count}</span>
+                  </div>
+                {/if}
+
+                {#if data.domain_randomness && data.domain_randomness.entropy !== undefined}
+                  <div
+                    class="flex flex-col md:grid md:grid-cols-[350px,1fr] md:items-center gap-2 md:gap-4 py-2 first:pt-0 last:pb-0"
+                  >
+                    <div class="flex items-center gap-1 text-gray-400">
+                      <span>Domain Randomness (Entropy):</span>
+                      <TooltipIcon
+                        text="Measures the unpredictability of the domain name. High entropy often indicates randomly generated domains used by malware (DGAs)."
+                      />
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-medium text-white"
+                        >{data.domain_randomness.entropy.toFixed(2)}</span
+                      >
+                      {#if data.domain_randomness.entropy > 3.8}
+                        <span class="text-xs px-1.5 py-0.5 bg-red-900/30 text-red-400 rounded"
+                          >High Entropy</span
+                        >
+                      {/if}
+                    </div>
                   </div>
                 {/if}
               </div>

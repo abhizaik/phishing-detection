@@ -66,6 +66,11 @@ func (c *Cache) Delete(ctx context.Context, key string) error {
 	return c.client.Del(ctx, key).Err()
 }
 
+// FlushAll removes all keys from the current database
+func (c *Cache) FlushAll(ctx context.Context) error {
+	return c.client.FlushAll(ctx).Err()
+}
+
 // Increment increments a key and returns the new value
 func (c *Cache) Increment(ctx context.Context, key string) (int64, error) {
 	return c.client.Incr(ctx, key).Result()

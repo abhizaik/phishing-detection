@@ -22,3 +22,9 @@ const HTTPCombinedTTL = 30 * time.Minute
 
 // TLSCombinedTTL - TLS/SSL certificates don't change frequently
 const TLSCombinedTTL = 24 * time.Hour
+
+// PhishTankTTL - Threat intel data should be reasonably fresh
+const PhishTankTTL = 1 * time.Hour
+
+// ContentAnalysisTTL - Page content can change, but usually stays consistent for a while
+const ContentAnalysisTTL = 1 * time.Hour
