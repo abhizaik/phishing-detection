@@ -3,6 +3,7 @@ package checks
 import (
 	"context"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,58 +14,87 @@ import (
 
 // FormInfo describes a discovered form
 type FormInfo struct {
-	Action           string   // resolved absolute action URL (may be empty -> current URL)
-	Method           string   // GET/POST etc.
-	Inputs           []string // raw input names/types/placeholder snippets
-	ContainsPassword bool
-	ContainsUserLike bool // username/email-like inputs
-	SubmitTexts      []string
-	ExternalAction   bool // action host != page host (true if external)
+	Action           string   `json:"action"` // resolved absolute action URL (may be empty -> current URL)
+	Method           string   `json:"method"` // GET/POST etc.
+	Inputs           []string `json:"inputs"` // raw input names/types/placeholder snippets
+	ContainsPassword bool     `json:"has_password"`
+	ContainsUserLike bool     `json:"has_user_like"` // username/email-like inputs
+	ContainsPayment  bool     `json:"has_payment"`   // credit card, money, etc.
+	ContainsPersonal bool     `json:"has_personal"`  // address, phone, ssn, etc.
+	SubmitTexts      []string `json:"submit_texts"`
+	ExternalAction   bool     `json:"is_external"` // action host != page host (true if external)
+	IsHidden         bool     `json:"is_hidden"`
+}
+
+type IframeInfo struct {
+	Source   string `json:"src"`
+	IsHidden bool   `json:"is_hidden"`
+	Width    string `json:"width"`
+	Height   string `json:"height"`
 }
 
 // PageFormResult summarizes page-level findings
 type PageFormResult struct {
-	URL           string
-	HasForms      bool
-	HasLoginForm  bool
-	FormCount     int
-	Forms         []FormInfo
-	FetchDuration time.Duration
+	URL             string         `json:"url"`
+	Title           string         `json:"title"`
+	HasForms        bool           `json:"has_forms"`
+	HasLoginForm    bool           `json:"has_login_form"`
+	HasPaymentForm  bool           `json:"has_payment_form"`
+	HasPersonalForm bool           `json:"has_personal_form"`
+	FormCount       int            `json:"form_count"`
+	Forms           []FormInfo     `json:"forms"`
+	Iframes         []IframeInfo   `json:"iframes"`
+	HasHiddenIframe bool           `json:"has_hidden_iframe"`
+	HasTracking     bool           `json:"has_tracking"` // detection of 1x1 pixels etc.
+	FetchDuration   time.Duration  `json:"fetch_duration"`
+	BrandCheck      BrandResult    `json:"brand_check"`
 }
 
-// GetPageFormInfo fetches the page (with timeout), parses HTML and returns form info.
-// It does not execute JavaScript. For JS-rendered pages use a headless browser.
+// GetPageFormInfo fetches the page (with timeout), parses HTML and returns info.
 func GetPageFormInfo(pageURL string) (*PageFormResult, error) {
 	start := time.Now()
+	log.Printf("Starting content analysis for: %s", pageURL)
 
 	// HTTP client with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, "GET", pageURL, nil)
 	if err != nil {
+		log.Printf("Failed to create request for %s: %v", pageURL, err)
 		return nil, err
 	}
-	// polite UA
-	req.Header.Set("User-Agent", "PhishScanner/1.0 (+https://example.local)")
+	// Use a common browser User-Agent to avoid blocks
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 
 	client := &http.Client{
-		Timeout: 12 * time.Second,
+		Timeout: 15 * time.Second,
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
+		log.Printf("HTTP request failed for %s: %v", pageURL, err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Non-200 status code for %s: %d", pageURL, resp.StatusCode)
+	}
+
 	// read body (limited)
 	body, err := io.ReadAll(io.LimitReader(resp.Body, 5*1024*1024)) // 5MB cap
 	if err != nil {
+		log.Printf("Failed to read body for %s: %v", pageURL, err)
 		return nil, err
 	}
 
+	log.Printf("Successfully fetched %d bytes from %s", len(body), pageURL)
+
 	doc, err := html.Parse(strings.NewReader(string(body)))
 	if err != nil {
+		log.Printf("Failed to parse HTML for %s: %v", pageURL, err)
 		return nil, err
 	}
 
@@ -75,43 +105,103 @@ func GetPageFormInfo(pageURL string) (*PageFormResult, error) {
 	pageHost := uParsed.Hostname()
 
 	var results []FormInfo
+	var iframes []IframeInfo
+	var pageTitle string
+	var hasTracking bool
+	var bodyText strings.Builder
 
-	// traverse nodes to find <form>
+	// traverse nodes to find <form>, <title>, <iframe> and collect body text
 	var traverse func(*html.Node)
 	traverse = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "form" {
-			f := extractFormInfo(n, uParsed, pageHost)
-			results = append(results, f)
+		if n.Type == html.ElementNode {
+			switch n.Data {
+			case "form":
+				f := extractFormInfo(n, uParsed, pageHost)
+				results = append(results, f)
+			case "iframe":
+				src := getAttr(n, "src")
+				w := getAttr(n, "width")
+				h := getAttr(n, "height")
+				style := getAttr(n, "style")
+				hidden := isHidden(n, style, w, h)
+				iframes = append(iframes, IframeInfo{
+					Source:   src,
+					IsHidden: hidden,
+					Width:    w,
+					Height:   h,
+				})
+			case "img":
+				w := getAttr(n, "width")
+				h := getAttr(n, "height")
+				if w == "1" && h == "1" || w == "0" && h == "0" {
+					hasTracking = true
+				}
+			case "title":
+				if n.FirstChild != nil {
+					pageTitle = n.FirstChild.Data
+				}
+			}
+		} else if n.Type == html.TextNode {
+			bodyText.WriteString(n.Data + " ")
 		}
+
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
 			traverse(c)
 		}
 	}
 	traverse(doc)
 
+	hasHiddenIframe := false
+	for _, ifr := range iframes {
+		if ifr.IsHidden {
+			hasHiddenIframe = true
+			break
+		}
+	}
+
 	res := &PageFormResult{
-		URL:           pageURL,
-		HasForms:      len(results) > 0,
-		HasLoginForm:  false,
-		FormCount:     len(results),
-		Forms:         results,
-		FetchDuration: time.Since(start),
+		URL:             pageURL,
+		Title:           strings.TrimSpace(pageTitle),
+		HasForms:        len(results) > 0,
+		HasLoginForm:    false,
+		HasPaymentForm:  false,
+		HasPersonalForm: false,
+		FormCount:       len(results),
+		Forms:           results,
+		Iframes:         iframes,
+		HasHiddenIframe: hasHiddenIframe,
+		HasTracking:     hasTracking,
+		FetchDuration:   time.Since(start),
 	}
 
 	// mark if any form looks like a login form
 	for _, f := range results {
 		if f.ContainsPassword || f.ContainsUserLike {
 			res.HasLoginForm = true
-			break
+		}
+		if f.ContainsPayment {
+			res.HasPaymentForm = true
+		}
+		if f.ContainsPersonal {
+			res.HasPersonalForm = true
 		}
 	}
+
+	// Brand Check
+	res.BrandCheck = CheckBrandMismatch(pageHost, res.Title, bodyText.String())
+
 	return res, nil
 }
 
 // extractFormInfo inspects a <form> node and returns a FormInfo
 func extractFormInfo(form *html.Node, base *url.URL, pageHost string) FormInfo {
+	style := getAttr(form, "style")
+	w := getAttr(form, "width")
+	h := getAttr(form, "height")
+
 	info := FormInfo{
-		Method: strings.ToUpper(getAttr(form, "method")),
+		Method:   strings.ToUpper(getAttr(form, "method")),
+		IsHidden: isHidden(form, style, w, h),
 	}
 	if info.Method == "" {
 		info.Method = "GET"
@@ -155,6 +245,28 @@ func extractFormInfo(form *html.Node, base *url.URL, pageHost string) FormInfo {
 					strings.Contains(strings.ToLower(placeholder), "email") {
 					info.ContainsUserLike = true
 				}
+
+				// Payment/Money detection
+				lName := strings.ToLower(name)
+				lId := strings.ToLower(id)
+				lPh := strings.ToLower(placeholder)
+				if strings.Contains(lName, "card") || strings.Contains(lId, "card") || strings.Contains(lPh, "card") ||
+					strings.Contains(lName, "cvv") || strings.Contains(lId, "cvv") ||
+					strings.Contains(lName, "expiry") || strings.Contains(lId, "expiry") ||
+					strings.Contains(lName, "credit") || strings.Contains(lId, "credit") ||
+					strings.Contains(lName, "money") || strings.Contains(lName, "pay") || strings.Contains(lName, "billing") ||
+					strings.Contains(lPh, "checkout") || strings.Contains(lPh, "payment") {
+					info.ContainsPayment = true
+				}
+
+				// Personal Info detection
+				if strings.Contains(lName, "address") || strings.Contains(lId, "address") || strings.Contains(lPh, "address") ||
+					strings.Contains(lName, "phone") || strings.Contains(lId, "phone") || strings.Contains(lPh, "phone") ||
+					strings.Contains(lName, "ssn") || strings.Contains(lId, "ssn") ||
+					strings.Contains(lName, "dob") || strings.Contains(lName, "birth") ||
+					strings.Contains(lName, "city") || strings.Contains(lName, "zip") || strings.Contains(lName, "state") {
+					info.ContainsPersonal = true
+				}
 			case "button":
 				// capture text content of button
 				txt := strings.TrimSpace(nodeText(n))
@@ -162,14 +274,23 @@ func extractFormInfo(form *html.Node, base *url.URL, pageHost string) FormInfo {
 					info.SubmitTexts = append(info.SubmitTexts, txt)
 					l := strings.ToLower(txt)
 					if looksLikeLoginText(l) {
-						info.ContainsUserLike = info.ContainsUserLike || false // don't override password flag
+						info.ContainsUserLike = true
+					}
+					if strings.Contains(l, "pay") || strings.Contains(l, "buy") || strings.Contains(l, "checkout") || strings.Contains(l, "order") {
+						info.ContainsPayment = true
 					}
 				}
 			case "a":
 				// sometimes login is an <a> styled as button
 				txt := strings.TrimSpace(nodeText(n))
-				if txt != "" && looksLikeLoginText(strings.ToLower(txt)) {
-					info.SubmitTexts = append(info.SubmitTexts, txt)
+				if txt != "" {
+					l := strings.ToLower(txt)
+					if looksLikeLoginText(l) {
+						info.SubmitTexts = append(info.SubmitTexts, txt)
+					}
+					if strings.Contains(l, "pay") || strings.Contains(l, "checkout") {
+						info.ContainsPayment = true
+					}
 				}
 			case "label":
 				// label text may indicate username/password fields
@@ -179,6 +300,12 @@ func extractFormInfo(form *html.Node, base *url.URL, pageHost string) FormInfo {
 				}
 				if strings.Contains(txt, "username") || strings.Contains(txt, "email") || strings.Contains(txt, "sign in") {
 					info.ContainsUserLike = true
+				}
+				if strings.Contains(txt, "card") || strings.Contains(txt, "cvv") || strings.Contains(txt, "expiry") || strings.Contains(txt, "credit") {
+					info.ContainsPayment = true
+				}
+				if strings.Contains(txt, "address") || strings.Contains(txt, "phone") || strings.Contains(txt, "zip") {
+					info.ContainsPersonal = true
 				}
 			}
 		}
@@ -263,11 +390,34 @@ func fmtInputSummary(typ, name, placeholder, aria, id string) string {
 
 func looksLikeLoginText(s string) bool {
 	s = strings.ToLower(strings.TrimSpace(s))
-	keywords := []string{"login", "log in", "sign in", "signin", "submit", "sign-on", "signon"}
+	keywords := []string{"login", "log in", "sign in", "signin", "submit", "sign-on", "signon", "sign up", "signup"}
 	for _, k := range keywords {
 		if strings.Contains(s, k) {
 			return true
 		}
 	}
+	return false
+}
+
+func isHidden(n *html.Node, style string, w string, h string) bool {
+	// Check hidden attribute
+	for _, a := range n.Attr {
+		if strings.EqualFold(a.Key, "hidden") || strings.EqualFold(a.Key, "type") && strings.EqualFold(a.Val, "hidden") {
+			return true
+		}
+	}
+
+	// Check style
+	style = strings.ToLower(style)
+	if strings.Contains(style, "display:none") || strings.Contains(style, "visibility:hidden") ||
+		strings.Contains(style, "opacity:0") || strings.Contains(style, "width:0") || strings.Contains(style, "height:0") {
+		return true
+	}
+
+	// Check dimensions
+	if w == "0" || h == "0" {
+		return true
+	}
+
 	return false
 }

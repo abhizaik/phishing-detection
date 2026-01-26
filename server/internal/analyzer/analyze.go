@@ -50,6 +50,7 @@ func Analyze(ctx context.Context, rawURL string) (Response, []error) {
 		entropyTask{},
 		contentTask{},
 		homoglyphTask{},
+		phishtankTask{},
 	}
 
 	// Start timing right before tasks run
@@ -99,6 +100,13 @@ func Analyze(ctx context.Context, rawURL string) (Response, []error) {
 				Success:              out.StatusSuccess,
 				IsRedirectStatusCode: out.StatusIsRedirect,
 			},
+		},
+		SSLInfo:          out.SSLInfo,
+		TLSInfo:          out.TLSInfo,
+		ContentData:      out.ContentData,
+		DomainRandomness: out.DomainRandomness,
+		ThreatIntel: ThreatIntel{
+			PhishTank: out.PhishTank,
 		},
 		Performance: Performance{
 			TotalTime: time.Since(start).String(),

@@ -7,6 +7,7 @@ import (
 	"github.com/abhizaik/SafeSurf/internal/service/checks"
 	"github.com/abhizaik/SafeSurf/internal/service/domaininfo"
 	"github.com/abhizaik/SafeSurf/internal/service/rank"
+	"github.com/abhizaik/SafeSurf/internal/service/threatfeeds"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -256,9 +257,18 @@ type contentTask struct{}
 
 func (contentTask) Name() string { return "content_check" }
 func (contentTask) Run(in *Input, out *Output) error {
-	c, _ := checks.GetPageFormInfo(in.Domain)
-	updateOutput(func(o *Output) { o.ContentData = c })(out)
-	return nil
+	_, err := cachedTask(
+		context.Background(),
+		in.Cache,
+		"content_check:"+in.URL,
+		constants.ContentAnalysisTTL,
+		func() (*checks.PageFormResult, error) {
+			return checks.GetPageFormInfo(in.URL)
+		},
+		func(o *Output, c *checks.PageFormResult) { o.ContentData = c },
+		out,
+	)
+	return err
 }
 
 // TLS
@@ -279,6 +289,25 @@ func (homoglyphTask) Run(in *Input, out *Output) error {
 	h, _ := checks.HasHomoglyphs(in.Domain)
 	updateOutput(func(o *Output) { o.HomoglyphPresent = h })(out)
 	return nil
+}
+
+// PhishTank
+type phishtankTask struct{}
+
+func (phishtankTask) Name() string { return "phishtank_check" }
+func (phishtankTask) Run(in *Input, out *Output) error {
+	_, err := cachedTask(
+		context.Background(),
+		in.Cache,
+		"phishtank:"+in.URL,
+		constants.PhishTankTTL,
+		func() (*threatfeeds.PhishTankResult, error) {
+			return threatfeeds.CheckPhishTank(in.URL)
+		},
+		func(o *Output, r *threatfeeds.PhishTankResult) { o.PhishTank = r },
+		out,
+	)
+	return err
 }
 
 // Optimized HTTP check (combines redirects, HSTS, and status code)

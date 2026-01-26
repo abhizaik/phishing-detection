@@ -168,6 +168,78 @@ func GenerateResult(resp Response) Result {
 		riskScore += 60
 	}
 
+	// --- 9. Threat Intelligence (PhishTank) ---
+	if resp.ThreatIntel.PhishTank != nil && resp.ThreatIntel.PhishTank.InDatabase {
+		if resp.ThreatIntel.PhishTank.Verified && resp.ThreatIntel.PhishTank.IsOnline {
+			badReasons = append(badReasons, "CONFIRMED PHISHING: This URL is listed in PhishTank and is currently active!")
+			riskScore += 100
+		} else if resp.ThreatIntel.PhishTank.Verified {
+			badReasons = append(badReasons, "Previously verified phishing URL (PhishTank database).")
+			riskScore += 80
+		} else {
+			badReasons = append(badReasons, "Suspected phishing URL (listed in PhishTank, verification pending).")
+			riskScore += 40
+		}
+		if resp.ThreatIntel.PhishTank.Target != "" {
+			badReasons = append(badReasons, fmt.Sprintf("Reported Target: %s", resp.ThreatIntel.PhishTank.Target))
+		}
+	}
+
+	// --- 10. Page Content & Phishing Signals ---
+	if resp.ContentData != nil {
+		if resp.ContentData.HasLoginForm {
+			// Check if domain is established
+			isEstablished := resp.Features.Rank > 0 && resp.Features.Rank <= 100000
+			isOld := resp.DomainInfo != nil && resp.DomainInfo.AgeDays > 365
+
+			if !isEstablished && !isOld {
+				badReasons = append(badReasons, "SUSPICIOUS: Login form detected on a new or unranked domain.")
+				riskScore += 50
+			} else {
+				neutralReasons = append(neutralReasons, "Page contains a login form.")
+			}
+		}
+
+		if resp.ContentData.HasPaymentForm {
+			badReasons = append(badReasons, "WARNING: Payment-related fields detected (credit card, CVV, etc.).")
+			riskScore += 30
+		}
+
+		if resp.ContentData.HasPersonalForm {
+			neutralReasons = append(neutralReasons, "Page requests personal information (address, phone, etc.).")
+		}
+
+		if resp.ContentData.HasHiddenIframe {
+			badReasons = append(badReasons, "WARNING: Hidden iframe detected (often used for background credential theft or clickjacking).")
+			riskScore += 40
+		}
+
+		if resp.ContentData.HasTracking {
+			neutralReasons = append(neutralReasons, "Background tracking elements (1x1 pixels) detected.")
+		}
+
+		if resp.ContentData.BrandCheck.IsMismatch {
+			badReasons = append(badReasons, fmt.Sprintf("BRAND MISMATCH: Page mentions '%s' but is hosted on an unofficial domain.", resp.ContentData.BrandCheck.BrandFound))
+			riskScore += 100
+		} else if len(resp.ContentData.BrandCheck.DetectedNames) > 0 {
+			goodReasons = append(goodReasons, fmt.Sprintf("Verified brand matching: %s", strings.Join(resp.ContentData.BrandCheck.DetectedNames, ", ")))
+			trustScore += 20
+		}
+
+		if resp.ContentData.HasForms {
+			for _, form := range resp.ContentData.Forms {
+				if form.ExternalAction {
+					badReasons = append(badReasons, "CRITICAL: Form submits data to a different domain (common phishing tactic).")
+					riskScore += 80
+				}
+				if form.ContainsPassword && !resp.SSLInfo.HasTLS {
+					badReasons = append(badReasons, "DANGEROUS: Password form detected over insecure connection!")
+					riskScore += 100
+				}
+			}
+		}
+	}
+
 	// --- Normalize / cap scores ---
 	riskScore = clamp(riskScore)
 	trustScore = clamp(trustScore)
